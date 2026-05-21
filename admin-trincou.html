@@ -242,7 +242,63 @@
 
     <!-- ACERTOS -->
     <div class="tab-content" id="tab-acertos">
-      <div class="section-title">💰 Histórico de acertos</div>
+
+      <!-- CONTROLE DE PAGAMENTOS -->
+      <div style="background:white;border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2);">
+        <div style="font-size:14px;font-weight:900;color:#0d3d0d;margin-bottom:12px;">🔌 Controle de pagamentos do site</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div id="statusPagamentos" style="flex:1;font-size:13px;font-weight:700;padding:10px 14px;border-radius:10px;background:#f0f0f0;color:#555;">Verificando...</div>
+          <button class="btn-red" id="btnFecharPag" onclick="fecharPagamentos()" style="padding:10px 20px;font-size:13px;">🔒 Fechar pagamentos</button>
+          <button class="btn-green" id="btnAbrirPag" onclick="abrirPagamentos()" style="padding:10px 20px;font-size:13px;display:none;">🔓 Reabrir pagamentos</button>
+        </div>
+        <div class="msg-box" id="msgPagamentos"></div>
+      </div>
+
+      <!-- ACERTO POR DIA -->
+      <div style="background:white;border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2);">
+        <div style="font-size:14px;font-weight:900;color:#0d3d0d;margin-bottom:12px;">📅 Acerto por dia</div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Selecione o dia</div>
+            <select id="seletorDiaAcerto" onchange="carregarCambistasDia()" style="padding:10px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:#0d3d0d;outline:none;min-width:180px;">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+        </div>
+        <div id="cambistasDiaWrap" style="display:none;">
+          <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px;" id="cambistasDiaTitulo"></div>
+          <div id="cambistasDiaLista"></div>
+        </div>
+        <div class="msg-box" id="msgAcertoDia"></div>
+      </div>
+
+      <!-- MODAL ACERTO -->
+      <div id="modalAcerto" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:white;border-radius:20px;padding:28px;max-width:440px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,0.4);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div style="font-size:18px;font-weight:900;color:#0d3d0d;" id="modalNome"></div>
+            <button onclick="fecharModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
+          </div>
+          <div id="modalBilhetes" style="max-height:220px;overflow-y:auto;border:1px solid #eee;border-radius:10px;margin-bottom:16px;"></div>
+          <div style="background:#f0f7f0;border-radius:10px;padding:14px;margin-bottom:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
+              <div><div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;">Vendidos</div><div style="font-size:22px;font-weight:900;color:#0d3d0d;" id="modalQtd">0</div></div>
+              <div><div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;">Comissão</div><div style="font-size:22px;font-weight:900;color:#1a6e1a;" id="modalComissao">R$ 0,00</div></div>
+              <div><div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;">A repassar</div><div style="font-size:22px;font-weight:900;color:#1e40af;" id="modalRepassar">R$ 0,00</div></div>
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Valor recebido (R$)</div>
+          <input type="number" id="modalValorRecebido" step="0.01" min="0" placeholder="0,00"
+            style="width:100%;padding:12px 16px;border:1.5px solid #ddd;border-radius:10px;font-size:18px;font-family:'Nunito',sans-serif;font-weight:700;outline:none;margin-bottom:10px;text-align:center;"/>
+          <input type="text" id="modalObs" placeholder="Observação (opcional)"
+            style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;margin-bottom:14px;"/>
+          <button onclick="confirmarAcerto()" style="width:100%;background:#1a6e1a;color:white;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;">✅ Confirmar acerto fechado</button>
+          <div class="msg-box" id="modalMsg" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <!-- HISTÓRICO -->
+      <div class="section-title">📋 Histórico de acertos</div>
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
         <select id="filtroCambistaAcerto" onchange="filtrarAcertos()" style="padding:8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;">
           <option value="">Todos os cambistas</option>
@@ -282,6 +338,7 @@ function entrar() {
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     carregarTudo();
+    verificarStatusPagamentos();
     document.getElementById('dataSorteio').value = new Date().toISOString().split('T')[0];
   } else {
     document.getElementById('erroLogin').style.display = 'block';
@@ -464,6 +521,7 @@ async function carregarDias() {
 }
 
 function renderizarDias() {
+  popularSeletorDias();
   const el = document.getElementById('listaDias');
   const fecharBox = document.getElementById('fecharBox');
 
@@ -626,6 +684,169 @@ async function enviarPlanilha() {
       mostrarMsg('geradorMsg', '⚠️ ' + text, 'erro');
     }
   } catch(e) { mostrarMsg('geradorMsg','⚠️ Erro: '+e.message,'erro'); }
+}
+
+// ── CONTROLE PAGAMENTOS ──────────────────────────────
+async function verificarStatusPagamentos() {
+  try {
+    const resp = await fetch(`${SCRIPT_URL}?acao=status`);
+    const text = await resp.text();
+    const fechado = text.includes('FECHADO');
+    const el = document.getElementById('statusPagamentos');
+    const btnF = document.getElementById('btnFecharPag');
+    const btnA = document.getElementById('btnAbrirPag');
+    if (fechado) {
+      el.textContent = '🔴 Pagamentos FECHADOS — site não aceita novos pagamentos';
+      el.style.background = '#fee2e2'; el.style.color = '#991b1b';
+      btnF.style.display = 'none'; btnA.style.display = 'block';
+    } else {
+      el.textContent = '🟢 Pagamentos ABERTOS — site aceitando pagamentos normalmente';
+      el.style.background = '#d1f7e0'; el.style.color = '#1a5c35';
+      btnF.style.display = 'block'; btnA.style.display = 'none';
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function fecharPagamentos() {
+  if (!confirm('Fechar pagamentos agora? O site vai parar de aceitar novos pagamentos.')) return;
+  try {
+    const body = new URLSearchParams({ acao: 'togglepag', estado: 'fechar' });
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body });
+    const text = await resp.text();
+    mostrarMsg('msgPagamentos', '🔒 Pagamentos fechados com sucesso!', 'ok');
+    verificarStatusPagamentos();
+  } catch(e) { mostrarMsg('msgPagamentos', '⚠️ Erro: ' + e.message, 'erro'); }
+}
+
+async function abrirPagamentos() {
+  if (!confirm('Reabrir pagamentos? O site voltará a aceitar novos pagamentos.')) return;
+  try {
+    const body = new URLSearchParams({ acao: 'togglepag', estado: 'abrir' });
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body });
+    mostrarMsg('msgPagamentos', '🔓 Pagamentos reabertos!', 'ok');
+    verificarStatusPagamentos();
+  } catch(e) { mostrarMsg('msgPagamentos', '⚠️ Erro: ' + e.message, 'erro'); }
+}
+
+// ── ACERTO POR DIA ────────────────────────────────────
+let acertoCambistaAtual = null;
+let acertoDiaAtual = null;
+
+function popularSeletorDias() {
+  const sel = document.getElementById('seletorDiaAcerto');
+  sel.innerHTML = '<option value="">Selecione...</option>' +
+    todosDias.map(d => `<option value="${d.data}">${d.data.split('-').reverse().join('/')}${d.ativo ? ' 🟢 ativo' : ''}</option>`).join('');
+}
+
+async function carregarCambistasDia() {
+  const data = document.getElementById('seletorDiaAcerto').value;
+  if (!data) return;
+  acertoDiaAtual = data;
+
+  const wrap = document.getElementById('cambistasDiaWrap');
+  const titulo = document.getElementById('cambistasDiaTitulo');
+  const lista = document.getElementById('cambistasDiaLista');
+
+  titulo.textContent = 'Carregando...';
+  wrap.style.display = 'block';
+  lista.innerHTML = '';
+
+  try {
+    const resp = await fetch(`${SCRIPT_URL}?acao=dia&data=${data}`);
+    const bilhetes = await resp.json();
+
+    const pagos = bilhetes.filter(b => String(b.status).toUpperCase().includes('PAGO') || String(b.status).toUpperCase().includes('DINHEIRO'));
+    const cambistas = {};
+    pagos.forEach(b => {
+      const c = b.cambista || 'Sem cambista';
+      if (!cambistas[c]) cambistas[c] = [];
+      cambistas[c].push(b);
+    });
+
+    titulo.textContent = `${data.split('-').reverse().join('/')} — ${pagos.length} bilhetes pagos`;
+
+    if (Object.keys(cambistas).length === 0) {
+      lista.innerHTML = '<div style="font-size:13px;color:#888;padding:8px;">Nenhuma venda registrada neste dia.</div>';
+      return;
+    }
+
+    lista.innerHTML = Object.entries(cambistas).map(([nome, bs]) => {
+      const din = bs.filter(b => String(b.status).toUpperCase().includes('DINHEIRO')).length;
+      const px  = bs.filter(b => !String(b.status).toUpperCase().includes('DINHEIRO')).length;
+      const comissao = bs.length * COMISSAO;
+      const repassar = din * (VALOR - COMISSAO);
+      return `
+        <div style="background:#f9f9f9;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:2px solid transparent;transition:border 0.2s;" onclick="abrirModalAcerto('${nome}', ${JSON.stringify(bs).replace(/'/g,"&#39;")})" onmouseover="this.style.borderColor='#1a6e1a'" onmouseout="this.style.borderColor='transparent'">
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#0d3d0d;">👤 ${nome}</div>
+            <div style="font-size:12px;color:#888;margin-top:3px;">${bs.length} vendido${bs.length>1?'s':''} · 💵${din} dinheiro · ✅${px} PIX</div>
+            <div style="font-size:12px;color:#1e40af;margin-top:2px;">A repassar: ${fmt(repassar)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:900;font-size:20px;color:#1a6e1a;">${fmt(comissao)}</div>
+            <div style="font-size:11px;color:#888;">comissão</div>
+            <div style="font-size:12px;color:#1a6e1a;margin-top:4px;font-weight:700;">Clique para acertar →</div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    titulo.textContent = '⚠️ Erro ao carregar';
+    console.error(e);
+  }
+}
+
+function abrirModalAcerto(nome, bilhetes) {
+  acertoCambistaAtual = { nome, bilhetes };
+  const din = bilhetes.filter(b => String(b.status).toUpperCase().includes('DINHEIRO')).length;
+  const comissao = bilhetes.length * COMISSAO;
+  const repassar = din * (VALOR - COMISSAO);
+
+  document.getElementById('modalNome').textContent = '👤 ' + nome;
+  document.getElementById('modalQtd').textContent = bilhetes.length;
+  document.getElementById('modalComissao').textContent = fmt(comissao);
+  document.getElementById('modalRepassar').textContent = fmt(repassar);
+  document.getElementById('modalValorRecebido').value = repassar.toFixed(2);
+  document.getElementById('modalObs').value = '';
+  mostrarMsg('modalMsg', '', '');
+
+  document.getElementById('modalBilhetes').innerHTML = bilhetes.map(b => `
+    <div style="display:flex;justify-content:space-between;padding:8px 14px;border-bottom:1px solid #f0f0f0;font-size:13px;">
+      <span style="font-weight:700;color:#0d3d0d;">Bilhete #${b.id}</span>
+      <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${String(b.status).toUpperCase().includes('DINHEIRO')?'#dbeafe':'#d1f7e0'};color:${String(b.status).toUpperCase().includes('DINHEIRO')?'#1e40af':'#1a5c35'};">${String(b.status).toUpperCase().includes('DINHEIRO')?'💵':'✅'}</span>
+    </div>`).join('');
+
+  const modal = document.getElementById('modalAcerto');
+  modal.style.display = 'flex';
+}
+
+function fecharModal() {
+  document.getElementById('modalAcerto').style.display = 'none';
+  acertoCambistaAtual = null;
+}
+
+async function confirmarAcerto() {
+  if (!acertoCambistaAtual || !acertoDiaAtual) return;
+  const valorRecebido = parseFloat(document.getElementById('modalValorRecebido').value) || 0;
+  const obs = document.getElementById('modalObs').value.trim() || 'Acerto manual';
+
+  try {
+    const body = new URLSearchParams({
+      acao: 'acerto',
+      cambista: acertoCambistaAtual.nome,
+      qtd: acertoCambistaAtual.bilhetes.length,
+      dia: acertoDiaAtual,
+      admin: 'Admin',
+      obs: `${obs} | Recebido: R$ ${valorRecebido.toFixed(2)}`
+    });
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body });
+    const text = await resp.text();
+    if (text.includes('registrado') || text.includes('OK')) {
+      mostrarMsg('modalMsg', '✅ Acerto registrado com sucesso!', 'ok');
+      setTimeout(() => { fecharModal(); carregarAcertos(); carregarCambistasDia(); }, 1500);
+    } else {
+      mostrarMsg('modalMsg', '⚠️ ' + text, 'erro');
+    }
+  } catch(e) { mostrarMsg('modalMsg', '⚠️ Erro: ' + e.message, 'erro'); }
 }
 
 // ── ACERTOS ──────────────────────────────────────────
