@@ -7,117 +7,196 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .card { background: white; border-radius: 20px; padding: 32px; width: 100%; max-width: 480px; box-shadow: 0 24px 64px rgba(0,0,0,0.4); }
+  body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh; padding: 20px; }
+
+  /* LOGIN */
+  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .card { background: white; border-radius: 20px; padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 24px 64px rgba(0,0,0,0.4); }
   h1 { font-size: 22px; font-weight: 900; color: #0d3d0d; margin-bottom: 4px; }
   .sub { font-size: 13px; color: #888; margin-bottom: 24px; }
-  input { width: 100%; padding: 12px 16px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; font-family: 'Nunito', sans-serif; outline: none; margin-bottom: 12px; }
-  input:focus { border-color: #1a6e1a; }
-  .btn { width: 100%; background: #1a6e1a; color: white; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
-  .btn:hover { background: #0d3d0d; }
+  input[type=password] { width: 100%; padding: 12px 16px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; font-family: 'Nunito', sans-serif; outline: none; margin-bottom: 12px; }
+  input[type=password]:focus { border-color: #1a6e1a; }
+  .btn-login { width: 100%; background: #1a6e1a; color: white; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+  .btn-login:hover { background: #0d3d0d; }
   .erro { color: #e03131; font-size: 13px; margin-bottom: 10px; display: none; font-weight: 700; }
 
-  /* Dashboard */
-  #dashboard { display: none; }
-  .header-dash { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-  .header-dash h2 { font-size: 20px; font-weight: 900; color: #0d3d0d; }
-  .btn-sair { background: #f0f0f0; color: #555; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .stat { border-radius: 12px; padding: 16px; text-align: center; }
-  .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-  .stat-val { font-size: 26px; font-weight: 900; }
-  .stat-green { background: #d1f7e0; }
-  .stat-green .stat-label { color: #1a5c35; }
-  .stat-green .stat-val { color: #0d3d0d; }
-  .stat-blue { background: #dbeafe; }
-  .stat-blue .stat-label { color: #1e40af; }
-  .stat-blue .stat-val { color: #1e3a8a; }
-  .stat-yellow { background: #fff3cd; }
-  .stat-yellow .stat-label { color: #856404; }
-  .stat-yellow .stat-val { color: #7c4a00; }
-  .stat-red { background: #fee2e2; }
-  .stat-red .stat-label { color: #991b1b; }
-  .stat-red .stat-val { color: #7f1d1d; }
-  .section-title { font-size: 14px; font-weight: 900; color: #0d3d0d; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; }
-  .cambista-row { background: #f9f9f9; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .cambista-nome { font-weight: 700; font-size: 14px; color: #0d3d0d; }
-  .cambista-stats { font-size: 12px; color: #555; margin-top: 2px; }
-  .cambista-val { font-weight: 900; font-size: 16px; color: #1a6e1a; }
-  .loading { text-align: center; color: #888; padding: 20px; font-size: 14px; }
-  .spinner { width: 20px; height: 20px; border: 2px solid #eee; border-top-color: #1a6e1a; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  /* DASHBOARD */
+  #dashboard { display: none; max-width: 900px; margin: 0 auto; }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .top-bar h2 { font-size: 24px; font-weight: 900; color: white; }
+  .top-bar-btns { display: flex; gap: 8px; }
+  .btn-atualizar { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+  .btn-sair { background: #e03131; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+
+  /* TOTAL CARD */
+  .total-card { background: linear-gradient(135deg, #f5c518, #c9960a); border-radius: 16px; padding: 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .total-card .label { font-size: 13px; font-weight: 700; color: #5a3800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .total-card .val { font-size: 42px; font-weight: 900; color: #0d3d0d; line-height: 1; }
+  .total-card .sub2 { font-size: 12px; color: #5a3800; margin-top: 4px; }
+  .total-card-icon { font-size: 56px; opacity: 0.4; }
+
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media(max-width:600px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+  .stat { border-radius: 14px; padding: 16px; text-align: center; background: white; }
+  .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .stat-val { font-size: 32px; font-weight: 900; }
+  .stat-sub { font-size: 11px; margin-top: 4px; }
+  .s-green .stat-label { color: #1a5c35; } .s-green .stat-val { color: #0d3d0d; } .s-green .stat-sub { color: #2f9e44; }
+  .s-blue .stat-label { color: #1e40af; } .s-blue .stat-val { color: #1e3a8a; } .s-blue .stat-sub { color: #3b82f6; }
+  .s-yellow .stat-label { color: #856404; } .s-yellow .stat-val { color: #7c4a00; } .s-yellow .stat-sub { color: #d97706; }
+  .s-gray .stat-label { color: #555; } .s-gray .stat-val { color: #333; } .s-gray .stat-sub { color: #888; }
+
+  /* FILTROS */
+  .filtros { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filtro-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.2s; }
+  .filtro-btn.ativo { background: white; color: #0d3d0d; border-color: white; }
+
+  /* SECTION */
+  .section-title { font-size: 14px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; display: flex; align-items: center; gap: 8px; }
+
+  /* CAMBISTA CARDS */
+  .cambistas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  @media(max-width:600px) { .cambistas-grid { grid-template-columns: 1fr; } }
+  .cambista-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+  .cambista-card-header { padding: 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
+  .cambista-card-header:hover { background: #f9f9f9; }
+  .cambista-avatar { width: 44px; height: 44px; border-radius: 50%; background: #0d3d0d; color: #f5c518; font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cambista-info { flex: 1; }
+  .cambista-nome { font-weight: 800; font-size: 15px; color: #0d3d0d; }
+  .cambista-stats-sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .cambista-valor { font-weight: 900; font-size: 18px; color: #1a6e1a; text-align: right; }
+  .cambista-valor small { display: block; font-size: 10px; color: #888; font-weight: 600; }
+  .cambista-detalhes { display: none; border-top: 1px solid #eee; }
+  .cambista-detalhes.aberto { display: block; }
+  .detalhe-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; }
+  .detalhe-item:last-child { border-bottom: none; }
+  .detalhe-num { font-weight: 700; font-size: 14px; color: #0d3d0d; }
+  .detalhe-data { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .badge-dinheiro { background: #dbeafe; color: #1e40af; }
+  .badge-pix { background: #d1f7e0; color: #1a5c35; }
+  .chevron { font-size: 12px; color: #aaa; transition: transform 0.2s; margin-left: 8px; }
+  .chevron.aberto { transform: rotate(180deg); }
+
+  /* RECENTES */
+  .recentes-lista { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+  .recente-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+  .recente-item:last-child { border-bottom: none; }
+  .recente-num { font-weight: 700; color: #0d3d0d; font-size: 14px; }
+  .recente-cambista { font-size: 11px; color: #888; margin-top: 2px; }
+  .recente-data { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+  /* LOADING */
+  .loading { text-align: center; color: rgba(255,255,255,0.6); padding: 40px; font-size: 14px; }
+  .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .btn-atualizar { background: #f0f7f0; color: #1a6e1a; border: 1.5px solid #1a6e1a; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
-  .total-geral { background: #0d3d0d; color: white; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 20px; }
-  .total-geral .label { font-size: 12px; color: #aed68a; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-  .total-geral .val { font-size: 32px; font-weight: 900; color: #f5c518; }
+
+  /* TODOS BILHETES */
+  .todos-wrap { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.2); margin-bottom: 24px; }
+  .todos-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; }
+  .todos-item:last-child { border-bottom: none; }
+  .search-bar { background: white; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; display: flex; gap: 10px; align-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+  .search-bar input { flex: 1; border: none; outline: none; font-size: 14px; font-family: 'Nunito', sans-serif; color: #333; }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <!-- LOGIN -->
-  <div id="login">
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="card">
     <h1>🔐 Painel Admin</h1>
     <p class="sub">Trincou Ganhou — Acesso restrito</p>
     <div class="erro" id="erroLogin">⚠️ Senha incorreta!</div>
     <input type="password" id="senhaInput" placeholder="Digite a senha" onkeydown="if(event.key==='Enter') entrar()"/>
-    <button class="btn" onclick="entrar()">Entrar</button>
+    <button class="btn-login" onclick="entrar()">Entrar</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="top-bar">
+    <h2>📊 Painel Admin</h2>
+    <div class="top-bar-btns">
+      <button class="btn-atualizar" onclick="carregarDados()">🔄 Atualizar</button>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
   </div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard">
-    <div class="header-dash">
-      <h2>📊 Relatório</h2>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-atualizar" onclick="carregarDados()">🔄 Atualizar</button>
-        <button class="btn-sair" onclick="sair()">Sair</button>
-      </div>
-    </div>
+  <div id="loadingDash" class="loading"><span class="spinner"></span> Carregando dados...</div>
 
-    <div id="loadingDash" class="loading"><span class="spinner"></span> Carregando dados...</div>
+  <div id="conteudo" style="display:none;">
 
-    <div id="conteudo" style="display:none;">
-      <div class="total-geral">
+    <!-- TOTAL -->
+    <div class="total-card">
+      <div>
         <div class="label">Total arrecadado</div>
         <div class="val" id="totalGeral">R$ 0,00</div>
+        <div class="sub2" id="totalSub"></div>
       </div>
-
-      <div class="stats-grid">
-        <div class="stat stat-green">
-          <div class="stat-label">Pago PIX</div>
-          <div class="stat-val" id="qtdPix">0</div>
-        </div>
-        <div class="stat stat-blue">
-          <div class="stat-label">Pago Dinheiro</div>
-          <div class="stat-val" id="qtdDinheiro">0</div>
-        </div>
-        <div class="stat stat-yellow">
-          <div class="stat-label">Disponível</div>
-          <div class="stat-val" id="qtdDisponivel">0</div>
-        </div>
-        <div class="stat stat-red">
-          <div class="stat-label">Total bilhetes</div>
-          <div class="stat-val" id="qtdTotal">0</div>
-        </div>
-      </div>
-
-      <div class="section-title">💰 Por cambista (dinheiro a receber)</div>
-      <div id="listaCambistas"></div>
-
-      <div class="section-title">🕐 Últimos pagamentos</div>
-      <div id="listaRecentes"></div>
+      <div class="total-card-icon">💰</div>
     </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat s-green">
+        <div class="stat-label">Pago PIX</div>
+        <div class="stat-val" id="qtdPix">0</div>
+        <div class="stat-sub" id="valPix">R$ 0,00</div>
+      </div>
+      <div class="stat s-blue">
+        <div class="stat-label">Pago Dinheiro</div>
+        <div class="stat-val" id="qtdDinheiro">0</div>
+        <div class="stat-sub" id="valDinheiro">R$ 0,00</div>
+      </div>
+      <div class="stat s-yellow">
+        <div class="stat-label">Disponível</div>
+        <div class="stat-val" id="qtdDisponivel">0</div>
+        <div class="stat-sub">sem pagamento</div>
+      </div>
+      <div class="stat s-gray">
+        <div class="stat-label">Total bilhetes</div>
+        <div class="stat-val" id="qtdTotal">0</div>
+        <div class="stat-sub">cadastrados</div>
+      </div>
+    </div>
+
+    <!-- CAMBISTAS -->
+    <div class="section-title">👥 Por cambista</div>
+    <div class="cambistas-grid" id="cambistasGrid"></div>
+
+    <!-- RECENTES -->
+    <div class="section-title">🕐 Últimos pagamentos</div>
+    <div class="recentes-lista" id="listaRecentes"></div>
+
+    <!-- TODOS OS BILHETES -->
+    <div class="section-title">🎟️ Todos os bilhetes</div>
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar por número, status ou cambista..." oninput="filtrarBilhetes()"/>
+    </div>
+    <div class="filtros">
+      <button class="filtro-btn ativo" onclick="setFiltro('todos', this)">Todos</button>
+      <button class="filtro-btn" onclick="setFiltro('pix', this)">✅ PIX</button>
+      <button class="filtro-btn" onclick="setFiltro('dinheiro', this)">💵 Dinheiro</button>
+      <button class="filtro-btn" onclick="setFiltro('disponivel', this)">🎟️ Disponível</button>
+    </div>
+    <div class="todos-wrap" id="todosBilhetes"></div>
+
   </div>
 </div>
 
 <script>
 const SENHA = '36211252';
 const SHEET_ID = '1ZeFUh5ItbA8Ie-v95MOdWvO5uMBxONEK_APLUQWpQBg';
+const VALOR = 2.5;
+let todosDados = [];
+let filtroAtual = 'todos';
 
 function entrar() {
   const senha = document.getElementById('senhaInput').value;
   if (senha === SENHA) {
-    document.getElementById('login').style.display = 'none';
+    document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     carregarDados();
   } else {
@@ -127,11 +206,24 @@ function entrar() {
 }
 
 function sair() {
-  document.getElementById('login').style.display = 'block';
+  document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('senhaInput').value = '';
   document.getElementById('conteudo').style.display = 'none';
   document.getElementById('loadingDash').style.display = 'block';
+  document.getElementById('loadingDash').innerHTML = '<span class="spinner"></span> Carregando dados...';
+}
+
+function formatarData(raw) {
+  if (!raw) return '';
+  try {
+    const d = new Date(raw);
+    return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return String(raw); }
+}
+
+function iniciais(nome) {
+  return nome.split(' ').map(p => p[0]).join('').substring(0,2).toUpperCase();
 }
 
 async function carregarDados() {
@@ -151,88 +243,151 @@ async function carregarDados() {
     const idxTel      = cols.findIndex(c => c.toUpperCase().includes('TELEFONE'));
     const idxData     = cols.findIndex(c => c.toUpperCase().includes('DATA'));
     const idxId       = 0;
-    const VALOR = 2.5;
 
     let pix = 0, dinheiro = 0, disponivel = 0;
     const cambistas = {};
     const recentes = [];
+    todosDados = [];
 
     rows.slice(1).forEach(row => {
       const cells = row.c;
       const status = String(cells[idxStatus]?.v || '').toUpperCase();
       const cambista = String(cells[idxCambista]?.v || '').trim();
+      const telefone = String(cells[idxTel]?.v || '').trim();
       const id = String(cells[idxId]?.v || '').padStart(4,'0');
-      const dataRaw = cells[idxData]?.v || null;
+      const dataFormatada = formatarData(cells[idxData]?.v);
 
-      // Converte data do formato Google Sheets
-      let dataFormatada = '';
-      if (dataRaw) {
-        try {
-          const d = new Date(dataRaw);
-          dataFormatada = d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-        } catch(e) { dataFormatada = String(dataRaw); }
-      }
+      const item = { id, status, cambista, telefone, dataFormatada };
+      todosDados.push(item);
 
-      if (status.includes('PAGO') && !status.includes('DINHEIRO')) pix++;
-      else if (status.includes('DINHEIRO')) {
+      if (status.includes('PAGO') && !status.includes('DINHEIRO')) {
+        pix++;
+        recentes.push(item);
+      } else if (status.includes('DINHEIRO')) {
         dinheiro++;
+        recentes.push(item);
         if (cambista) {
-          if (!cambistas[cambista]) cambistas[cambista] = 0;
-          cambistas[cambista]++;
+          if (!cambistas[cambista]) cambistas[cambista] = [];
+          cambistas[cambista].push(item);
         }
-      }
-      else disponivel++;
-
-      if (status.includes('PAGO')) {
-        recentes.push({ id, status, cambista, dataFormatada });
+      } else {
+        disponivel++;
       }
     });
 
     const total = (pix + dinheiro) * VALOR;
     document.getElementById('totalGeral').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+    document.getElementById('totalSub').textContent = `${pix + dinheiro} bilhetes vendidos de ${rows.length - 1}`;
     document.getElementById('qtdPix').textContent = pix;
+    document.getElementById('valPix').textContent = 'R$ ' + (pix * VALOR).toFixed(2).replace('.', ',');
     document.getElementById('qtdDinheiro').textContent = dinheiro;
+    document.getElementById('valDinheiro').textContent = 'R$ ' + (dinheiro * VALOR).toFixed(2).replace('.', ',');
     document.getElementById('qtdDisponivel').textContent = disponivel;
     document.getElementById('qtdTotal').textContent = rows.length - 1;
 
-    // Cambistas
-    const listaCambistas = document.getElementById('listaCambistas');
+    // CAMBISTAS
+    const grid = document.getElementById('cambistasGrid');
     if (Object.keys(cambistas).length === 0) {
-      listaCambistas.innerHTML = '<div style="font-size:13px;color:#888;padding:8px;">Nenhum pagamento em dinheiro registrado ainda.</div>';
+      grid.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:13px;padding:8px;">Nenhum pagamento em dinheiro ainda.</div>';
     } else {
-      listaCambistas.innerHTML = Object.entries(cambistas).map(([nome, qtd]) => `
-        <div class="cambista-row">
-          <div>
-            <div class="cambista-nome">👤 ${nome}</div>
-            <div class="cambista-stats">${qtd} bilhete${qtd > 1 ? 's' : ''} em dinheiro</div>
+      grid.innerHTML = Object.entries(cambistas).map(([nome, bilhetes]) => `
+        <div class="cambista-card">
+          <div class="cambista-card-header" onclick="toggleCambista('${nome}')">
+            <div class="cambista-avatar">${iniciais(nome)}</div>
+            <div class="cambista-info">
+              <div class="cambista-nome">${nome}</div>
+              <div class="cambista-stats-sub">${bilhetes.length} bilhete${bilhetes.length > 1 ? 's' : ''} em dinheiro</div>
+            </div>
+            <div>
+              <div class="cambista-valor">R$ ${(bilhetes.length * VALOR).toFixed(2).replace('.', ',')}<small>a repassar</small></div>
+            </div>
+            <span class="chevron" id="chev-${nome}">▼</span>
           </div>
-          <div class="cambista-val">R$ ${(qtd * VALOR).toFixed(2).replace('.', ',')}</div>
+          <div class="cambista-detalhes" id="det-${nome}">
+            ${bilhetes.map(b => `
+              <div class="detalhe-item">
+                <div>
+                  <div class="detalhe-num">Bilhete #${b.id}</div>
+                  ${b.dataFormatada ? `<div class="detalhe-data">🕐 ${b.dataFormatada}</div>` : ''}
+                  ${b.telefone ? `<div class="detalhe-data">📱 ${b.telefone}</div>` : ''}
+                </div>
+                <span class="badge badge-dinheiro">💵 Dinheiro</span>
+              </div>`).join('')}
+          </div>
         </div>`).join('');
     }
 
-    // Últimos 10 pagamentos ordenados por data
+    // RECENTES
     const listaRecentes = document.getElementById('listaRecentes');
-    const ultimos = recentes.slice(-50).reverse().slice(0, 10);
+    const ultimos = [...recentes].reverse().slice(0, 10);
     if (ultimos.length === 0) {
-      listaRecentes.innerHTML = '<div style="font-size:13px;color:#888;padding:8px;">Nenhum pagamento ainda.</div>';
+      listaRecentes.innerHTML = '<div style="padding:16px;font-size:13px;color:#888;">Nenhum pagamento ainda.</div>';
     } else {
       listaRecentes.innerHTML = ultimos.map(b => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f9f9f9;border-radius:10px;margin-bottom:6px;">
+        <div class="recente-item">
           <div>
-            <span style="font-weight:700;color:#0d3d0d;">Bilhete #${b.id}</span>
-            ${b.cambista ? `<span style="font-size:11px;color:#888;margin-left:6px;">via ${b.cambista}</span>` : ''}
-            ${b.dataFormatada ? `<div style="font-size:11px;color:#aaa;margin-top:2px;">🕐 ${b.dataFormatada}</div>` : ''}
+            <div class="recente-num">Bilhete #${b.id}</div>
+            ${b.cambista ? `<div class="recente-cambista">👤 ${b.cambista}</div>` : ''}
+            ${b.dataFormatada ? `<div class="recente-data">🕐 ${b.dataFormatada}</div>` : ''}
           </div>
-          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${b.status.includes('DINHEIRO') ? '#dbeafe' : '#d1f7e0'};color:${b.status.includes('DINHEIRO') ? '#1e40af' : '#1a5c35'};">${b.status}</span>
+          <span class="badge ${b.status.includes('DINHEIRO') ? 'badge-dinheiro' : 'badge-pix'}">${b.status.includes('DINHEIRO') ? '💵 Dinheiro' : '✅ PIX'}</span>
         </div>`).join('');
     }
 
+    renderizarTodos();
     document.getElementById('loadingDash').style.display = 'none';
     document.getElementById('conteudo').style.display = 'block';
 
   } catch(e) {
-    document.getElementById('loadingDash').innerHTML = '⚠️ Erro ao carregar dados. <button onclick="carregarDados()" style="color:#1a6e1a;background:none;border:none;cursor:pointer;font-weight:700;">Tentar novamente</button>';
+    document.getElementById('loadingDash').innerHTML = '⚠️ Erro ao carregar. <button onclick="carregarDados()" style="color:white;background:none;border:none;cursor:pointer;font-weight:700;text-decoration:underline;">Tentar novamente</button>';
   }
+}
+
+function toggleCambista(nome) {
+  const det = document.getElementById('det-' + nome);
+  const chev = document.getElementById('chev-' + nome);
+  det.classList.toggle('aberto');
+  chev.classList.toggle('aberto');
+}
+
+function setFiltro(filtro, btn) {
+  filtroAtual = filtro;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  renderizarTodos();
+}
+
+function filtrarBilhetes() {
+  renderizarTodos();
+}
+
+function renderizarTodos() {
+  const busca = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  let lista = todosDados.filter(b => {
+    const matchFiltro =
+      filtroAtual === 'todos' ||
+      (filtroAtual === 'pix' && b.status.includes('PAGO') && !b.status.includes('DINHEIRO')) ||
+      (filtroAtual === 'dinheiro' && b.status.includes('DINHEIRO')) ||
+      (filtroAtual === 'disponivel' && !b.status.includes('PAGO') && !b.status.includes('DINHEIRO'));
+    const matchBusca = !busca || b.id.includes(busca) || b.status.toLowerCase().includes(busca) || b.cambista.toLowerCase().includes(busca) || b.telefone.includes(busca);
+    return matchFiltro && matchBusca;
+  });
+
+  const el = document.getElementById('todosBilhetes');
+  if (lista.length === 0) {
+    el.innerHTML = '<div style="padding:16px;font-size:13px;color:#888;text-align:center;">Nenhum bilhete encontrado.</div>';
+    return;
+  }
+  el.innerHTML = lista.map(b => `
+    <div class="todos-item">
+      <div>
+        <div style="font-weight:700;color:#0d3d0d;font-size:14px;">Bilhete #${b.id}</div>
+        ${b.cambista ? `<div style="font-size:11px;color:#888;margin-top:2px;">👤 ${b.cambista}</div>` : ''}
+        ${b.telefone ? `<div style="font-size:11px;color:#aaa;">📱 ${b.telefone}</div>` : ''}
+        ${b.dataFormatada ? `<div style="font-size:11px;color:#aaa;">🕐 ${b.dataFormatada}</div>` : ''}
+      </div>
+      <span class="badge ${b.status.includes('DINHEIRO') ? 'badge-dinheiro' : b.status.includes('PAGO') ? 'badge-pix' : ''}" style="${!b.status.includes('PAGO') && !b.status.includes('DINHEIRO') ? 'background:#fff3cd;color:#856404;' : ''}">${b.status.includes('DINHEIRO') ? '💵 Dinheiro' : b.status.includes('PAGO') ? '✅ PIX' : '🎟️ Disponível'}</span>
+    </div>`).join('');
 }
 </script>
 </body>
