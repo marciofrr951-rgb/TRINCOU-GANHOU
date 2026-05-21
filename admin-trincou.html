@@ -641,7 +641,10 @@ async function carregarCambistasDia() {
   try {
     var resp = await fetch(SCRIPT_URL + '?acao=dia&data=' + data);
     var bilhetes = await resp.json();
-    var pagos = bilhetes.filter(function(b){ var s = String(b.status).toUpperCase(); return s.includes('PAGO') || s.includes('DINHEIRO'); });
+    var pagos = bilhetes.filter(function(b) {
+      var s = String(b.status).toUpperCase();
+      return s.includes('PAGO') || s.includes('DINHEIRO');
+    });
     var cambistas = {};
     pagos.forEach(function(b) {
       var c = b.cambista || 'Sem cambista';
@@ -653,15 +656,22 @@ async function carregarCambistasDia() {
       lista.innerHTML = '<div style="font-size:13px;color:#888;padding:8px;">Nenhuma venda neste dia.</div>';
       return;
     }
-    lista.innerHTML = Object.entries(cambistas).map(function(entry) {
+
+    // Guarda dados para uso nos cliques
+    window._cambistasDia = cambistas;
+
+    lista.innerHTML = '';
+    Object.entries(cambistas).forEach(function(entry, i) {
       var nome = entry[0];
       var bs = entry[1];
       var din = bs.filter(function(b){ return String(b.status).toUpperCase().includes('DINHEIRO'); }).length;
       var px = bs.length - din;
       var comissao = bs.length * COMISSAO;
       var repassar = din * (VALOR - COMISSAO);
-      var bsJson = JSON.stringify(bs).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return '<div style="background:#f9f9f9;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:2px solid #eee;" onclick="abrirModalAcerto(\'' + nome.replace(/'/g,"\\'") + '\',' + "'" + bsJson + "')" onmouseover="this.style.borderColor=\'#1a6e1a\'" onmouseout="this.style.borderColor=\'#eee\'">' +
+
+      var div = document.createElement('div');
+      div.style.cssText = 'background:#f9f9f9;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:2px solid #eee;transition:border 0.2s;';
+      div.innerHTML =
         '<div>' +
         '<div style="font-weight:800;font-size:15px;color:#0d3d0d;">' + nome + '</div>' +
         '<div style="font-size:12px;color:#888;margin-top:3px;">' + bs.length + ' vendidos - ' + din + ' dinheiro - ' + px + ' PIX</div>' +
@@ -670,13 +680,20 @@ async function carregarCambistasDia() {
         '<div style="text-align:right;">' +
         '<div style="font-weight:900;font-size:20px;color:#1a6e1a;">' + fmt(comissao) + '</div>' +
         '<div style="font-size:11px;color:#888;">comissao</div>' +
-        '</div></div>';
-    }).join('');
+        '</div>';
+
+      div.addEventListener('mouseover', function(){ this.style.borderColor = '#1a6e1a'; });
+      div.addEventListener('mouseout', function(){ this.style.borderColor = '#eee'; });
+      div.addEventListener('click', (function(n, b) {
+        return function() { abrirModalAcerto(n, b); };
+      })(nome, bs));
+
+      lista.appendChild(div);
+    });
   } catch(e) { titulo.textContent = 'Erro ao carregar'; console.error(e); }
 }
 
-function abrirModalAcerto(nome, bilhetesJson) {
-  var bilhetes = typeof bilhetesJson === 'string' ? JSON.parse(bilhetesJson) : bilhetesJson;
+function abrirModalAcerto(nome, bilhetes) {
   acertoCambistaAtual = {nome:nome, bilhetes:bilhetes};
   var din = bilhetes.filter(function(b){ return String(b.status).toUpperCase().includes('DINHEIRO'); }).length;
   var comissao = bilhetes.length * COMISSAO;
