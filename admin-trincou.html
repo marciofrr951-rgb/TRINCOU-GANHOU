@@ -149,6 +149,7 @@ async function carregarDados() {
     const idxStatus   = cols.findIndex(c => c.toUpperCase().includes('STATUS'));
     const idxCambista = cols.findIndex(c => c.toUpperCase().includes('CAMBISTA'));
     const idxTel      = cols.findIndex(c => c.toUpperCase().includes('TELEFONE'));
+    const idxData     = cols.findIndex(c => c.toUpperCase().includes('DATA'));
     const idxId       = 0;
     const VALOR = 2.5;
 
@@ -161,6 +162,16 @@ async function carregarDados() {
       const status = String(cells[idxStatus]?.v || '').toUpperCase();
       const cambista = String(cells[idxCambista]?.v || '').trim();
       const id = String(cells[idxId]?.v || '').padStart(4,'0');
+      const dataRaw = cells[idxData]?.v || null;
+
+      // Converte data do formato Google Sheets
+      let dataFormatada = '';
+      if (dataRaw) {
+        try {
+          const d = new Date(dataRaw);
+          dataFormatada = d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        } catch(e) { dataFormatada = String(dataRaw); }
+      }
 
       if (status.includes('PAGO') && !status.includes('DINHEIRO')) pix++;
       else if (status.includes('DINHEIRO')) {
@@ -173,7 +184,7 @@ async function carregarDados() {
       else disponivel++;
 
       if (status.includes('PAGO')) {
-        recentes.push({ id, status, cambista });
+        recentes.push({ id, status, cambista, dataFormatada });
       }
     });
 
@@ -199,9 +210,9 @@ async function carregarDados() {
         </div>`).join('');
     }
 
-    // Últimos 10 pagamentos
+    // Últimos 10 pagamentos ordenados por data
     const listaRecentes = document.getElementById('listaRecentes');
-    const ultimos = recentes.slice(-10).reverse();
+    const ultimos = recentes.slice(-50).reverse().slice(0, 10);
     if (ultimos.length === 0) {
       listaRecentes.innerHTML = '<div style="font-size:13px;color:#888;padding:8px;">Nenhum pagamento ainda.</div>';
     } else {
@@ -210,6 +221,7 @@ async function carregarDados() {
           <div>
             <span style="font-weight:700;color:#0d3d0d;">Bilhete #${b.id}</span>
             ${b.cambista ? `<span style="font-size:11px;color:#888;margin-left:6px;">via ${b.cambista}</span>` : ''}
+            ${b.dataFormatada ? `<div style="font-size:11px;color:#aaa;margin-top:2px;">🕐 ${b.dataFormatada}</div>` : ''}
           </div>
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${b.status.includes('DINHEIRO') ? '#dbeafe' : '#d1f7e0'};color:${b.status.includes('DINHEIRO') ? '#1e40af' : '#1a5c35'};">${b.status}</span>
         </div>`).join('');
