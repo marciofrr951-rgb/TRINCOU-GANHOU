@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Cambista — Trincou Ganhou</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: white; border-radius: 20px; padding: 32px; width: 100%; max-width: 480px; box-shadow: 0 24px 64px rgba(0,0,0,0.4); }
+  h1 { font-size: 22px; font-weight: 900; color: #0d3d0d; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+  input { width: 100%; padding: 12px 16px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; font-family: 'Nunito', sans-serif; outline: none; margin-bottom: 12px; }
+  input:focus { border-color: #1a6e1a; }
+  .btn { width: 100%; background: #1a6e1a; color: white; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+  .btn:hover { background: #0d3d0d; }
+  .erro { color: #e03131; font-size: 13px; margin-bottom: 10px; display: none; font-weight: 700; }
+  #dashboard { display: none; }
+  .header-dash { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .header-dash h2 { font-size: 18px; font-weight: 900; color: #0d3d0d; }
+  .btn-sair { background: #f0f0f0; color: #555; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+  .resumo { background: #0d3d0d; color: white; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 20px; }
+  .resumo .label { font-size: 11px; color: #aed68a; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .resumo .val { font-size: 28px; font-weight: 900; color: #f5c518; }
+  .resumo .sub2 { font-size: 12px; color: #aed68a; margin-top: 4px; }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .stat { border-radius: 10px; padding: 12px; text-align: center; }
+  .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .stat-val { font-size: 22px; font-weight: 900; }
+  .stat-green { background: #d1f7e0; }
+  .stat-green .stat-label { color: #1a5c35; }
+  .stat-green .stat-val { color: #0d3d0d; }
+  .stat-blue { background: #dbeafe; }
+  .stat-blue .stat-label { color: #1e40af; }
+  .stat-blue .stat-val { color: #1e3a8a; }
+  .section-title { font-size: 13px; font-weight: 900; color: #0d3d0d; text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px; }
+  .bilhete-row { background: #f9f9f9; border-radius: 10px; padding: 10px 14px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .loading { text-align: center; color: #888; padding: 20px; font-size: 14px; }
+  .spinner { width: 20px; height: 20px; border: 2px solid #eee; border-top-color: #1a6e1a; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- LOGIN -->
+  <div id="login">
+    <h1>👤 Painel Cambista</h1>
+    <p class="sub">Trincou Ganhou — Digite seu PIN</p>
+    <div class="erro" id="erroLogin">⚠️ PIN incorreto!</div>
+    <input type="password" id="pinInput" placeholder="Digite seu PIN" maxlength="10"
+      oninput="this.value=this.value.replace(/\D/g,'')"
+      onkeydown="if(event.key==='Enter') entrar()"/>
+    <button class="btn" onclick="entrar()">Entrar</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <div class="header-dash">
+      <h2>📋 Meus bilhetes</h2>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+
+    <div id="loadingDash" class="loading"><span class="spinner"></span> Carregando...</div>
+
+    <div id="conteudo" style="display:none;">
+      <div class="resumo">
+        <div class="label">A repassar para o organizador</div>
+        <div class="val" id="totalDever">R$ 0,00</div>
+        <div class="sub2" id="nomeExibido"></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat stat-green">
+          <div class="stat-label">Vendidos</div>
+          <div class="stat-val" id="qtdVendidos">0</div>
+        </div>
+        <div class="stat stat-blue">
+          <div class="stat-label">Pago PIX</div>
+          <div class="stat-val" id="qtdPix">0</div>
+        </div>
+      </div>
+
+      <div class="section-title">Bilhetes em dinheiro</div>
+      <div id="listaBilhetes"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Cadastro de cambistas: PIN → Nome
+const CAMBISTAS = {
+  '991305': 'Thiago',
+  // Adicione mais cambistas aqui: 'PIN': 'Nome'
+};
+
+const SHEET_ID = '1ZeFUh5ItbA8Ie-v95MOdWvO5uMBxONEK_APLUQWpQBg';
+const VALOR = 2.5;
+let cambistaAtual = '';
+
+function entrar() {
+  const pin = document.getElementById('pinInput').value.trim();
+  if (CAMBISTAS[pin]) {
+    cambistaAtual = CAMBISTAS[pin];
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    carregarDados();
+  } else {
+    document.getElementById('erroLogin').style.display = 'block';
+    document.getElementById('pinInput').value = '';
+  }
+}
+
+function sair() {
+  cambistaAtual = '';
+  document.getElementById('login').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pinInput').value = '';
+  document.getElementById('conteudo').style.display = 'none';
+  document.getElementById('loadingDash').style.display = 'block';
+}
+
+async function carregarDados() {
+  document.getElementById('loadingDash').style.display = 'block';
+  document.getElementById('conteudo').style.display = 'none';
+  document.getElementById('nomeExibido').textContent = 'Cambista: ' + cambistaAtual;
+
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=0`;
+    const resp = await fetch(url);
+    const text = await resp.text();
+    const json = JSON.parse(text.substring(47, text.length - 2));
+    const rows = json.table.rows;
+    const cols = json.table.cols.map(c => c.label);
+
+    const idxId       = 0;
+    const idxStatus   = cols.findIndex(c => c.toUpperCase().includes('STATUS'));
+    const idxCambista = cols.findIndex(c => c.toUpperCase().includes('CAMBISTA'));
+
+    const meusBilhetes = rows.slice(1).filter(row => {
+      const cells = row.c;
+      const cambista = String(cells[idxCambista]?.v || '').trim().toUpperCase();
+      return cambista === cambistaAtual.toUpperCase();
+    });
+
+    const dinheiro = meusBilhetes.filter(row => String(row.c[idxStatus]?.v || '').toUpperCase().includes('DINHEIRO'));
+    const pix = meusBilhetes.filter(row => {
+      const s = String(row.c[idxStatus]?.v || '').toUpperCase();
+      return s.includes('PAGO') && !s.includes('DINHEIRO');
+    });
+
+    document.getElementById('qtdVendidos').textContent = meusBilhetes.length;
+    document.getElementById('qtdPix').textContent = pix.length;
+    document.getElementById('totalDever').textContent = 'R$ ' + (dinheiro.length * VALOR).toFixed(2).replace('.', ',');
+
+    const lista = document.getElementById('listaBilhetes');
+    if (dinheiro.length === 0) {
+      lista.innerHTML = '<div style="font-size:13px;color:#888;padding:8px;">Nenhum bilhete em dinheiro registrado.</div>';
+    } else {
+      lista.innerHTML = dinheiro.map(row => {
+        const id = String(row.c[idxId]?.v || '').padStart(4,'0');
+        return `
+          <div class="bilhete-row">
+            <span style="font-weight:700;color:#0d3d0d;">Bilhete #${id}</span>
+            <span style="font-size:12px;font-weight:700;background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:20px;">💵 Dinheiro</span>
+          </div>`;
+      }).join('');
+    }
+
+    document.getElementById('loadingDash').style.display = 'none';
+    document.getElementById('conteudo').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('loadingDash').innerHTML = '⚠️ Erro ao carregar. <button onclick="carregarDados()" style="color:#1a6e1a;background:none;border:none;cursor:pointer;font-weight:700;">Tentar novamente</button>';
+  }
+}
+</script>
+</body>
+</html>
