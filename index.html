@@ -554,10 +554,12 @@
           </button>
         </div>
         <div id="pagoDinheiroBox" style="display:none;margin-top:12px;background:#f0f7f0;border:1.5px solid #1a6e1a;border-radius:12px;padding:14px;">
-          <div class="input-label" style="text-align:left;color:#0d3d0d;margin-bottom:6px;">👤 Nome do cambista</div>
-          <input type="text" id="cambistaNome"
+          <div class="input-label" style="text-align:left;color:#0d3d0d;margin-bottom:6px;">🔑 PIN do cambista</div>
+          <input type="password" id="cambistaPin"
             style="width:100%;padding:10px 14px;border:1.5px solid #1a6e1a;border-radius:10px;font-size:15px;font-family:var(--font-sans);background:white;color:#0d3d0d;outline:none;margin-bottom:10px;"
-            placeholder="Ex: João Silva"/>
+            placeholder="Digite seu PIN"
+            oninput="this.value=this.value.replace(/\D/g,'')"
+            maxlength="10"/>
           <button onclick="registrarDinheiro()" style="width:100%;background:#1a6e1a;color:white;border:none;border-radius:10px;padding:12px;font-family:var(--font-sans);font-size:15px;font-weight:700;cursor:pointer;">
             ✅ Confirmar pagamento em dinheiro
           </button>
@@ -920,7 +922,7 @@ async function gerarPagamento() {
   btn.textContent = '⏳ Gerando PIX...';
 
   try {
-    const resp = await fetch('/pagamento', {
+    const resp = await fetch('/functions/pagamento', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -975,17 +977,31 @@ function mostrarPagoDinheiro() {
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
+// Cadastro de cambistas: PIN → Nome (mesmo do painel cambista)
+const CAMBISTAS_PIN = {
+  '991305': 'Thiago',
+  // Adicione mais: 'PIN': 'Nome'
+};
+
 async function registrarDinheiro() {
   const bilhete = window._bilheteAtual;
   if (!bilhete) return;
 
-  const cambista = document.getElementById('cambistaNome').value.trim();
+  const pin = document.getElementById('cambistaPin').value.trim();
   const telefone = document.getElementById('telefoneInput').value.trim();
   const msg = document.getElementById('dinheiroMsg');
 
+  if (!pin) {
+    msg.style.color = '#e03131';
+    msg.textContent = '⚠️ Digite o PIN do cambista!';
+    return;
+  }
+
+  const cambista = CAMBISTAS_PIN[pin];
   if (!cambista) {
     msg.style.color = '#e03131';
-    msg.textContent = '⚠️ Digite o nome do cambista!';
+    msg.textContent = '⚠️ PIN inválido! Acesso negado.';
+    document.getElementById('cambistaPin').value = '';
     return;
   }
 
@@ -1209,7 +1225,7 @@ async function pagarLote() {
   const total = loteItens.length * CONFIG.VALOR;
 
   try {
-    const resp = await fetch('/pagamento', {
+    const resp = await fetch('/functions/pagamento', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
