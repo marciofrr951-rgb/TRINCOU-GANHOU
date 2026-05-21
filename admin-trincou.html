@@ -736,8 +736,37 @@ async function confirmarAcerto() {
     var resp = await fetch(SCRIPT_URL, {method:'POST', body:body});
     var text = await resp.text();
     mostrarMsg('modalMsg', 'Acerto registrado!', 'ok');
-    setTimeout(function(){ fecharModal(); carregarAcertos(); carregarCambistasDia(); }, 1500);
+    // Guarda nome do cambista acertado
+    if (!window._cambistasDiaAcertados) window._cambistasDiaAcertados = {};
+    if (!window._cambistasDiaAcertados[acertoDiaAtual]) window._cambistasDiaAcertados[acertoDiaAtual] = {};
+    window._cambistasDiaAcertados[acertoDiaAtual][acertoCambistaAtual.nome] = true;
+    setTimeout(function(){
+      fecharModal();
+      carregarAcertos();
+      recarregarCambistasSemAcertados();
+    }, 1500);
   } catch(e) { mostrarMsg('modalMsg', 'Erro: ' + e.message, 'erro'); }
+}
+
+function recarregarCambistasSemAcertados() {
+  // Remove da lista os cambistas que ja foram acertados neste dia
+  var lista = document.getElementById('cambistasDiaLista');
+  if (!lista || !acertoDiaAtual) return;
+  var acertados = (window._cambistasDiaAcertados && window._cambistasDiaAcertados[acertoDiaAtual]) || {};
+  var cards = lista.querySelectorAll('div');
+  cards.forEach(function(div) {
+    if (div.parentNode !== lista) return;
+    var nomeEl = div.querySelector('div[style*="font-weight:800"]');
+    if (!nomeEl) return;
+    var nome = nomeEl.textContent.trim();
+    if (acertados[nome]) {
+      div.remove();
+    }
+  });
+  // Se nao sobrou ninguem
+  if (lista.children.length === 0) {
+    lista.innerHTML = '<div style="font-size:13px;color:#1a6e1a;font-weight:700;padding:12px;background:#d1f7e0;border-radius:10px;text-align:center;">Todos os acertos do dia foram realizados!</div>';
+  }
 }
 
 function gerarBilhetes() {
