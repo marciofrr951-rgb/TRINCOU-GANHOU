@@ -554,12 +554,10 @@
           </button>
         </div>
         <div id="pagoDinheiroBox" style="display:none;margin-top:12px;background:#f0f7f0;border:1.5px solid #1a6e1a;border-radius:12px;padding:14px;">
-          <div class="input-label" style="text-align:left;color:#0d3d0d;margin-bottom:6px;">🔑 PIN do cambista</div>
-          <input type="password" id="cambistaPin"
+          <div class="input-label" style="text-align:left;color:#0d3d0d;margin-bottom:6px;">👤 Nome do cambista</div>
+          <input type="text" id="cambistaNome"
             style="width:100%;padding:10px 14px;border:1.5px solid #1a6e1a;border-radius:10px;font-size:15px;font-family:var(--font-sans);background:white;color:#0d3d0d;outline:none;margin-bottom:10px;"
-            placeholder="Digite seu PIN"
-            oninput="this.value=this.value.replace(/\D/g,'')"
-            maxlength="10"/>
+            placeholder="Ex: João Silva"/>
           <button onclick="registrarDinheiro()" style="width:100%;background:#1a6e1a;color:white;border:none;border-radius:10px;padding:12px;font-family:var(--font-sans);font-size:15px;font-weight:700;cursor:pointer;">
             ✅ Confirmar pagamento em dinheiro
           </button>
@@ -977,31 +975,17 @@ function mostrarPagoDinheiro() {
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
-// Cadastro de cambistas: PIN → Nome (mesmo do painel cambista)
-const CAMBISTAS_PIN = {
-  '991305': 'Thiago',
-  // Adicione mais: 'PIN': 'Nome'
-};
-
 async function registrarDinheiro() {
   const bilhete = window._bilheteAtual;
   if (!bilhete) return;
 
-  const pin = document.getElementById('cambistaPin').value.trim();
+  const cambista = document.getElementById('cambistaNome').value.trim();
   const telefone = document.getElementById('telefoneInput').value.trim();
   const msg = document.getElementById('dinheiroMsg');
 
-  if (!pin) {
-    msg.style.color = '#e03131';
-    msg.textContent = '⚠️ Digite o PIN do cambista!';
-    return;
-  }
-
-  const cambista = CAMBISTAS_PIN[pin];
   if (!cambista) {
     msg.style.color = '#e03131';
-    msg.textContent = '⚠️ PIN inválido! Acesso negado.';
-    document.getElementById('cambistaPin').value = '';
+    msg.textContent = '⚠️ Digite o nome do cambista!';
     return;
   }
 
@@ -1053,9 +1037,13 @@ async function consultarBilhetes() {
   document.getElementById('consultaLoading').style.display = 'block';
 
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&gid=${CONFIG.SHEET_GID}`;
-    const resp = await fetch(url);
-    const text = await resp.text();
+    // Busca bilhetes e resultado do sorteio em paralelo
+    const [respBilhetes, respResultado] = await Promise.all([
+      fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&gid=${CONFIG.SHEET_GID}`),
+      fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=resultado').then(r => r.json()).catch(() => [])
+    ]);
+
+    const text = await respBilhetes.text();
     const json = JSON.parse(text.substring(47, text.length - 2));
     const rows = json.table.rows;
     const cols = json.table.cols.map(c => c.label);
@@ -1066,8 +1054,8 @@ async function consultarBilhetes() {
     const idxJ3     = cols.findIndex(c => c.toUpperCase().includes('JOGO_03') || c.toUpperCase() === 'JOGO03');
     const idxStatus = cols.findIndex(c => c.toUpperCase().includes('STATUS'));
     const idxTel    = cols.findIndex(c => c.toUpperCase().includes('TELEFONE'));
+    const idxDataS  = cols.findIndex(c => c.toUpperCase().includes('DATA_SORTEIO') || c.toUpperCase() === 'DATA_SORTEIO');
 
-    // Normaliza telefone para comparar só dígitos
     const telDigitos = tel.replace(/\D/g,'');
 
     const encontrados = rows.filter(row => {
@@ -1077,43 +1065,84 @@ async function consultarBilhetes() {
       return status.includes('pago') && celTel === telDigitos;
     });
 
+    // Monta mapa de resultados por data
+    const resultados = Array.isArray(respResultado) ? respResultado : [];
+    const mapaResultados = {};
+    resultados.forEach(r => { mapaResultados[r.data] = r.numeros.split(',').map(n => parseInt(n)); });
+
+    function verificarJogo(jogo, sorteados) {
+      if (!jogo || !sorteados || sorteados.length === 0) return null;
+      const nums = String(jogo).split('-').map(n => parseInt(n));
+      const acertos = nums.filter(n => sorteados.includes(n));
+      return acertos.length >= 3;
+    }
+
     const lista = document.getElementById('consultaLista');
 
     if (encontrados.length === 0) {
-      lista.innerHTML = `
-        <div class="empty-state" style="color:var(--color-text-secondary);">
-          <span>🔍</span>
-          Nenhum bilhete pago encontrado para este número.
-        </div>`;
+      lista.innerHTML = '<div style="text-align:center;padding:30px;color:#888;"><span style="font-size:40px;display:block;margin-bottom:12px;">🔍</span>Nenhum bilhete pago encontrado para este número.</div>';
     } else {
-      lista.innerHTML = `
-        <div style="font-weight:700;font-size:15px;color:var(--color-text-primary);margin-bottom:12px;">
-          🍀 ${encontrados.length} bilhete${encontrados.length > 1 ? 's' : ''} encontrado${encontrados.length > 1 ? 's' : ''}
-        </div>
-        ${encontrados.map(row => {
+      const totalGanhadores = [];
+      lista.innerHTML = '<div style="font-weight:700;font-size:15px;color:#0d3d0d;margin-bottom:12px;">🍀 ' + encontrados.length + ' bilhete' + (encontrados.length > 1 ? 's' : '') + ' encontrado' + (encontrados.length > 1 ? 's' : '') + '</div>' +
+        encontrados.map(row => {
           const cells = row.c;
           const id = String(cells[idxId]?.v || '').padStart(4,'0');
           const j1 = cells[idxJ1]?.v || '';
           const j2 = cells[idxJ2]?.v || '';
           const j3 = cells[idxJ3]?.v || '';
           const status = String(cells[idxStatus]?.v || '');
-          return `
-            <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px;margin-bottom:8px;border-left:3px solid #1a6e1a;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <span style="font-weight:800;font-size:15px;color:#0d3d0d;">Bilhete #${id}</span>
-                <span style="font-size:11px;font-weight:700;background:#d1f7e0;color:#1a5c35;padding:3px 10px;border-radius:20px;">${status}</span>
-              </div>
-              <div style="font-size:12px;color:var(--color-text-secondary);">
-                J01: ${j1} &nbsp;|&nbsp; J02: ${j2} &nbsp;|&nbsp; J03: ${j3}
-              </div>
-            </div>`;
-        }).join('')}`;
+          const dataSorteio = idxDataS >= 0 ? String(cells[idxDataS]?.v || '') : '';
+          const sorteados = dataSorteio && mapaResultados[dataSorteio] ? mapaResultados[dataSorteio] : null;
+
+          const g1 = sorteados ? verificarJogo(j1, sorteados) : null;
+          const g2 = sorteados ? verificarJogo(j2, sorteados) : null;
+          const g3 = sorteados ? verificarJogo(j3, sorteados) : null;
+          const ganhou = g1 || g2 || g3;
+          if (ganhou) totalGanhadores.push(id);
+
+          const temResultado = sorteados !== null;
+          const badgeResultado = !temResultado
+            ? '<span style="font-size:11px;font-weight:700;background:#fff3cd;color:#856404;padding:4px 12px;border-radius:20px;">⏳ Aguardando sorteio</span>'
+            : ganhou
+              ? '<span style="font-size:13px;font-weight:900;background:#d1f7e0;color:#1a5c35;padding:6px 14px;border-radius:20px;border:2px solid #2f9e44;">🏆 GANHOU!</span>'
+              : '<span style="font-size:11px;font-weight:700;background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;">❌ Não ganhou</span>';
+
+          function jogoHtml(label, jogo, ganhou) {
+            if (!jogo) return '';
+            var nums = String(jogo).split('-');
+            var cor = ganhou === true ? '#2f9e44' : ganhou === false ? '#ccc' : '#1a6e1a';
+            var bg = ganhou === true ? '#d1f7e0' : ganhou === false ? '#f9f9f9' : '#f0f7f0';
+            return '<div style="display:flex;align-items:center;gap:8px;background:' + bg + ';border-radius:8px;padding:6px 10px;margin-bottom:4px;">' +
+              '<span style="font-size:11px;font-weight:700;color:' + cor + ';min-width:40px;">' + label + '</span>' +
+              nums.map(function(n) {
+                var acertou = sorteados && sorteados.includes(parseInt(n));
+                return '<span style="background:' + (acertou ? '#0d3d0d' : 'white') + ';color:' + (acertou ? '#f5c518' : '#333') + ';font-weight:700;font-size:13px;width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;">' + n + '</span>';
+              }).join('') +
+              (ganhou === true ? '<span style="font-size:11px;font-weight:700;color:#1a5c35;margin-left:4px;">✓ GANHOU</span>' : '') +
+              '</div>';
+          }
+
+          return '<div style="background:white;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-left:4px solid ' + (ganhou ? '#2f9e44' : temResultado ? '#e03131' : '#f5c518') + ';">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+            '<span style="font-weight:800;font-size:15px;color:#0d3d0d;">Bilhete #' + id + '</span>' +
+            badgeResultado + '</div>' +
+            (temResultado ? '<div style="font-size:11px;color:#888;margin-bottom:8px;">Sorteados: ' + sorteados.map(n => String(n).padStart(2,'0')).join(' - ') + '</div>' : '') +
+            jogoHtml('J01', j1, g1) +
+            jogoHtml('J02', j2, g2) +
+            jogoHtml('J03', j3, g3) +
+            '</div>';
+        }).join('');
+
+      if (totalGanhadores.length > 0) {
+        lista.innerHTML = '<div style="background:linear-gradient(135deg,#f5c518,#c9960a);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;"><div style="font-size:28px;margin-bottom:4px;">🏆</div><div style="font-weight:900;font-size:18px;color:#0d3d0d;">PARABENS! Voce ganhou!</div><div style="font-size:13px;color:#5a3800;margin-top:4px;">Bilhete(s) vencedor(es): #' + totalGanhadores.join(', #') + '</div></div>' + lista.innerHTML;
+      }
     }
 
     document.getElementById('consultaResultado').style.display = 'block';
   } catch(e) {
     erroEl.textContent = '⚠️ Erro ao consultar. Tente novamente.';
     erroEl.style.display = 'block';
+    console.error(e);
   } finally {
     document.getElementById('consultaLoading').style.display = 'none';
   }
