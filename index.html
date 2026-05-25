@@ -475,6 +475,132 @@
 </head>
 <body>
 
+<style>
+#age-gate {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  font-family: 'Nunito', sans-serif;
+}
+.age-card {
+  background: #0a0a0a;
+  border-radius: 20px;
+  border: 1px solid #222;
+  width: 340px;
+  overflow: hidden;
+  text-align: center;
+}
+.age-top {
+  background: #0a0a0a;
+  padding: 28px 20px 0;
+}
+.age-logo {
+  font-size: 52px;
+  display: block;
+  margin-bottom: 6px;
+}
+.age-brand {
+  font-family: 'Nunito', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 2px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.age-brand span { color: #4ade4a; }
+.age-zigzag-top {
+  width: 100%;
+  display: block;
+  margin-top: 20px;
+}
+.age-middle {
+  background: #f0ede0;
+  padding: 10px 28px 20px;
+}
+.age-question {
+  font-size: 28px;
+  font-weight: 900;
+  color: #111;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+.age-question span { color: #2ecc2e; }
+.age-btns {
+  display: flex;
+  gap: 12px;
+}
+.age-btn-no {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #111;
+  background: transparent;
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #111;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.age-btn-yes {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #2ecc2e;
+  background: #111;
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #2ecc2e;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.age-btn-no:hover { background: #eee; }
+.age-btn-yes:hover { background: #1a1a1a; }
+.age-zigzag-bot {
+  width: 100%;
+  display: block;
+}
+</style>
+
+<div id="age-gate">
+  <div class="age-card">
+    <div class="age-top">
+      <span class="age-logo">🍀</span>
+      <div class="age-brand">TRINCOU <span>GANHOU</span></div>
+      <svg class="age-zigzag-top" viewBox="0 0 340 30" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="0,30 0,15 17,0 34,15 51,0 68,15 85,0 102,15 119,0 136,15 153,0 170,15 187,0 204,15 221,0 238,15 255,0 272,15 289,0 306,15 323,0 340,15 340,30" fill="#f0ede0"/>
+      </svg>
+    </div>
+    <div class="age-middle">
+      <div class="age-question">VOCÊ TEM MAIS DE <span>18 ANOS?</span></div>
+      <div class="age-btns">
+        <button class="age-btn-no" onclick="document.getElementById('age-gate').style.display='none';setTimeout(function(){document.getElementById('age-gate').style.display='flex';},100);">NÃO</button>
+        <button class="age-btn-yes" onclick="document.getElementById('age-gate').style.display='none';sessionStorage.setItem('age-ok','1');">SIM</button>
+      </div>
+    </div>
+    <svg class="age-zigzag-bot" viewBox="0 0 340 30" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="0,0 0,15 17,30 34,15 51,30 68,15 85,30 102,15 119,30 136,15 153,30 170,15 187,30 204,15 221,30 238,15 255,30 272,15 289,30 306,15 323,30 340,15 340,0" fill="#f0ede0"/>
+      <rect x="0" y="14" width="340" height="16" fill="#0a0a0a"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+if (sessionStorage.getItem('age-ok') === '1') {
+  document.getElementById('age-gate').style.display = 'none';
+}
+</script>
+
+
 <header>
   <div class="logo">TRINCOU <span>GANHOU</span></div>
   <nav>
