@@ -751,7 +751,11 @@ async function carregarCambistasDia() {
   wrap.style.display = 'block';
   lista.innerHTML = '';
   try {
-    var resp = await fetch(SCRIPT_URL + '?acao=dia&data=' + data);
+    // Se for dia ativo, busca da aba Bilhetes diretamente
+    var diaAtivo = todosDias.find(function(d){ return d.ativo; });
+    var isAtivo = diaAtivo && diaAtivo.data === data;
+    var url = SCRIPT_URL + '?acao=dia&data=' + data + (isAtivo ? '&ativo=1' : '');
+    var resp = await fetch(url);
     var bilhetes = await resp.json();
     var pagos = bilhetes.filter(function(b) {
       var s = String(b.status).toUpperCase();
