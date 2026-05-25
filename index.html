@@ -425,7 +425,7 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
 
   <div class="search-section">
     <div class="search-card">
-      <div class="search-label">Digite o número do seu bilhete</div>
+      <div class="search-label" style="text-align:center;">Digite o número do seu bilhete</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <input type="tel" id="numBilhete" class="num-input" maxlength="4" placeholder="0000"
           oninput="this.value=this.value.replace(/\D/g,'')"
@@ -966,7 +966,7 @@ async function consultarBilhetes() {
       lista.innerHTML = '<div style="text-align:center;padding:30px;color:#888;"><span style="font-size:40px;display:block;margin-bottom:12px;">🔍</span>Nenhum bilhete pago encontrado para este número.</div>';
     } else {
       const totalGanhadores = [];
-      lista.innerHTML = '<div style="font-weight:700;font-size:15px;color:#0d3d0d;margin-bottom:12px;">🍀 ' + encontrados.length + ' bilhete' + (encontrados.length > 1 ? 's' : '') + ' encontrado' + (encontrados.length > 1 ? 's' : '') + '</div>' +
+      lista.innerHTML = '<div style="font-weight:700;font-size:15px;color:#4ade4a;margin-bottom:12px;">🍀 ' + encontrados.length + ' bilhete' + (encontrados.length > 1 ? 's' : '') + ' encontrado' + (encontrados.length > 1 ? 's' : '') + '</div>' +
         encontrados.map(row => {
           const cells = row.c;
           const id = String(cells[idxId]?.v || '').padStart(4,'0');
@@ -984,35 +984,48 @@ async function consultarBilhetes() {
           if (ganhou) totalGanhadores.push(id);
 
           const temResultado = sorteados !== null;
-          const badgeResultado = !temResultado
-            ? '<span style="font-size:11px;font-weight:700;background:#fff3cd;color:#856404;padding:4px 12px;border-radius:20px;">⏳ Aguardando sorteio</span>'
-            : ganhou
-              ? '<span style="font-size:13px;font-weight:900;background:#d1f7e0;color:#1a5c35;padding:6px 14px;border-radius:20px;border:2px solid #2f9e44;">🏆 GANHOU!</span>'
-              : '<span style="font-size:11px;font-weight:700;background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;">❌ Não ganhou</span>';
 
-          function jogoHtml(label, jogo, ganhou) {
+          // Badge no topo — só mostra aguardando se não tem resultado
+          const badgeTop = !temResultado
+            ? '<span style="font-size:11px;font-weight:700;background:rgba(245,197,24,0.15);color:#f5c518;padding:4px 12px;border-radius:20px;border:1px solid rgba(245,197,24,0.3);">⏳ Aguardando sorteio</span>'
+            : '';
+
+          // Badge resultado — GANHOU ou PERDEU no canto inferior direito
+          const badgeResultado = !temResultado ? ''
+            : ganhou
+              ? '<div style="text-align:right;margin-top:10px;"><span style="font-size:15px;font-weight:900;background:rgba(74,222,74,0.15);color:#4ade4a;padding:8px 18px;border-radius:20px;border:2px solid rgba(74,222,74,0.5);letter-spacing:1px;">🏆 GANHOU!</span></div>'
+              : '<div style="text-align:right;margin-top:10px;"><span style="font-size:13px;font-weight:900;background:rgba(224,49,49,0.15);color:#ff6b6b;padding:8px 18px;border-radius:20px;border:2px solid rgba(224,49,49,0.4);letter-spacing:1px;">❌ PERDEU</span></div>';
+
+          // Linha com números sorteados
+          const sorteadosHtml = temResultado
+            ? '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">Sorteados: ' +
+              sorteados.map(function(n){ return '<span style="background:rgba(245,197,24,0.15);color:#f5c518;font-weight:700;font-size:12px;padding:2px 8px;border-radius:6px;border:1px solid rgba(245,197,24,0.3);">' + String(n).padStart(2,'0') + '</span>'; }).join('') +
+              '</div>'
+            : '';
+
+          function jogoHtml(label, jogo, ganhouJogo) {
             if (!jogo) return '';
             var nums = String(jogo).split('-');
-            var cor = ganhou === true ? '#2f9e44' : ganhou === false ? '#ccc' : '#1a6e1a';
-            var bg = ganhou === true ? '#d1f7e0' : ganhou === false ? '#f9f9f9' : '#f0f7f0';
-            return '<div style="display:flex;align-items:center;gap:8px;background:' + bg + ';border-radius:8px;padding:6px 10px;margin-bottom:4px;">' +
-              '<span style="font-size:11px;font-weight:700;color:' + cor + ';min-width:40px;">' + label + '</span>' +
+            var borderColor = ganhouJogo === true ? 'rgba(74,222,74,0.5)' : 'rgba(255,255,255,0.08)';
+            var bg = ganhouJogo === true ? 'rgba(74,222,74,0.08)' : 'rgba(0,0,0,0.2)';
+            return '<div style="display:flex;align-items:center;gap:8px;background:' + bg + ';border:1px solid ' + borderColor + ';border-radius:10px;padding:8px 12px;margin-bottom:6px;">' +
+              '<span style="font-size:11px;font-weight:900;color:' + (ganhouJogo === true ? '#4ade4a' : 'rgba(255,255,255,0.4)') + ';min-width:36px;letter-spacing:1px;">' + label + '</span>' +
               nums.map(function(n) {
                 var acertou = sorteados && sorteados.includes(parseInt(n));
-                return '<span style="background:' + (acertou ? '#0d3d0d' : 'white') + ';color:' + (acertou ? '#f5c518' : '#333') + ';font-weight:700;font-size:13px;width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;">' + n + '</span>';
+                return '<span style="background:' + (acertou ? '#f5c518' : 'rgba(255,255,255,0.07)') + ';color:' + (acertou ? '#0a1a0a' : 'rgba(255,255,255,0.8)') + ';font-weight:900;font-size:14px;width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:1px solid ' + (acertou ? '#f5c518' : 'rgba(255,255,255,0.1)') + ';">' + n + '</span>';
               }).join('') +
-              (ganhou === true ? '<span style="font-size:11px;font-weight:700;color:#1a5c35;margin-left:4px;">✓ GANHOU</span>' : '') +
               '</div>';
           }
 
-          return '<div style="background:white;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-left:4px solid ' + (ganhou ? '#2f9e44' : temResultado ? '#e03131' : '#f5c518') + ';">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
-            '<span style="font-weight:800;font-size:15px;color:#0d3d0d;">Bilhete #' + id + '</span>' +
-            badgeResultado + '</div>' +
-            (temResultado ? '<div style="font-size:11px;color:#888;margin-bottom:8px;">Sorteados: ' + sorteados.map(n => String(n).padStart(2,'0')).join(' - ') + '</div>' : '') +
+          return '<div style="background:rgba(10,30,10,0.9);border:1px solid ' + (ganhou ? 'rgba(74,222,74,0.4)' : temResultado ? 'rgba(224,49,49,0.3)' : 'rgba(245,197,24,0.2)') + ';border-radius:14px;padding:16px;margin-bottom:14px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+            '<span style="font-weight:900;font-size:16px;color:white;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;">BILHETE #' + id + '</span>' +
+            badgeTop + '</div>' +
+            sorteadosHtml +
             jogoHtml('J01', j1, g1) +
             jogoHtml('J02', j2, g2) +
             jogoHtml('J03', j3, g3) +
+            badgeResultado +
             '</div>';
         }).join('');
 
@@ -1073,7 +1086,18 @@ async function carregarCambistasSelect() {
 // Carrega ao abrir a página
 window.addEventListener('DOMContentLoaded', function() {
   carregarCambistasSelect();
+  carregarDataSorteio();
 });
+
+async function carregarDataSorteio() {
+  try {
+    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=datasorteio');
+    var data = await resp.text();
+    if (data && data.includes('-')) {
+      CONFIG.DATA_SORTEIO = data.trim();
+    }
+  } catch(e) {}
+}
 
 async function registrarLoteDinheiro() {
   if (loteItens.length === 0) return;
