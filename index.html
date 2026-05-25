@@ -560,10 +560,6 @@
           </button>
         </div>
         <div id="pagoDinheiroBox" style="display:none;margin-top:12px;background:#f0f7f0;border:1.5px solid #1a6e1a;border-radius:12px;padding:14px;">
-          <div class="input-label" style="text-align:left;color:#0d3d0d;margin-bottom:6px;">👤 Nome do cambista</div>
-          <input type="text" id="cambistaNome"
-            style="width:100%;padding:10px 14px;border:1.5px solid #1a6e1a;border-radius:10px;font-size:15px;font-family:var(--font-sans);background:white;color:#0d3d0d;outline:none;margin-bottom:10px;"
-            placeholder="Ex: João Silva"/>
           <button onclick="registrarDinheiro()" style="width:100%;background:#1a6e1a;color:white;border:none;border-radius:10px;padding:12px;font-family:var(--font-sans);font-size:15px;font-weight:700;cursor:pointer;">
             ✅ Confirmar pagamento em dinheiro
           </button>
@@ -982,15 +978,11 @@ async function registrarDinheiro() {
   const bilhete = window._bilheteAtual;
   if (!bilhete) return;
 
-  const cambista = document.getElementById('cambistaNome').value.trim();
+  const cambista = document.getElementById('cambistaSelect') ? document.getElementById('cambistaSelect').value : '';
   const telefone = document.getElementById('telefoneInput').value.trim();
   const msg = document.getElementById('dinheiroMsg');
 
-  if (!cambista) {
-    msg.style.color = '#e03131';
-    msg.textContent = '⚠️ Digite o nome do cambista!';
-    return;
-  }
+
 
   msg.style.color = '#555';
   msg.textContent = '⏳ Registrando...';
