@@ -603,19 +603,8 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
     <div class="section-header">👥 Cambistas</div>
     <div class="section-sub">Encontre um cambista autorizado na sua região</div>
     <div id="listaCambistas">
-      <div class="cambista-card">
-        <div class="cambista-header">
-          <div class="cambista-avatar">CA</div>
-          <div>
-            <div class="cambista-nome">Carlos Alberto</div>
-            <div class="cambista-regiao">📍 Januária / MG</div>
-          </div>
-        </div>
-        <div class="cambista-contatos">
-          <a class="contato-link" href="https://wa.me/5538999990001" target="_blank">
-            <span class="contato-icon">💬</span> (38) 99999-0001
-          </a>
-        </div>
+      <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:14px;">
+        <span class="spinner"></span> Carregando...
       </div>
     </div>
   </div>
@@ -1035,12 +1024,36 @@ async function carregarCambistasSelect() {
   try {
     var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=cambistas');
     var cambistas = await resp.json();
+
+    // Atualiza dropdown do checkout
     var sel = document.getElementById('cambistaSelect');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">Sem cambista (compra direta)</option>' +
-      cambistas.map(function(c) {
-        return '<option value="' + c.nome + '">' + c.nome + '</option>';
-      }).join('');
+    if (sel) {
+      sel.innerHTML = '<option value="">Sem cambista (compra direta)</option>' +
+        cambistas.map(function(c) {
+          return '<option value="' + c.nome + '">' + c.nome + '</option>';
+        }).join('');
+    }
+
+    // Atualiza lista da página Cambistas
+    var lista = document.getElementById('listaCambistas');
+    if (lista) {
+      if (cambistas.length === 0) {
+        lista.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:14px;">Nenhum cambista cadastrado ainda.</div>';
+      } else {
+        lista.innerHTML = cambistas.map(function(c) {
+          var ini = c.nome.split(' ').map(function(p){ return p[0]; }).join('').substring(0,2).toUpperCase();
+          var tel = c.telefone ? c.telefone.replace(/\D/g,'') : '';
+          return '<div class="cambista-card">' +
+            '<div class="cambista-header">' +
+            '<div class="cambista-avatar">' + ini + '</div>' +
+            '<div><div class="cambista-nome">' + c.nome + '</div>' +
+            (c.telefone ? '<div class="cambista-regiao">📱 ' + c.telefone + '</div>' : '') +
+            '</div></div>' +
+            (tel ? '<div class="cambista-contatos"><a class="contato-link" href="https://wa.me/55' + tel + '" target="_blank"><span class="contato-icon">💬</span> Chamar no WhatsApp</a></div>' : '') +
+            '</div>';
+        }).join('');
+      }
+    }
   } catch(e) { console.error(e); }
 }
 
