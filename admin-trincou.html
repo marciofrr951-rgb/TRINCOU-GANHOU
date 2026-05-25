@@ -375,6 +375,9 @@ function setTab(nome, btn) {
   document.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('ativo'); });
   document.getElementById('tab-' + nome).classList.add('ativo');
   btn.classList.add('ativo');
+  if (nome === 'equipe') carregarCambistasAdmin();
+  if (nome === 'acertos') verificarStatusPagamentos();
+  if (nome === 'sorteio') carregarResultados();
 }
 
 function fmt(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
