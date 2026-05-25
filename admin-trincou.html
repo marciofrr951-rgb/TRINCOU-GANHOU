@@ -1139,7 +1139,7 @@ async function carregarResultados() {
         '<div style="font-weight:700;color:#0d3d0d;font-size:14px;">' + r.data.split('-').reverse().join('/') + (r.concurso ? ' — Concurso ' + r.concurso : '') + '</div>' +
         '<div style="font-size:11px;color:#aaa;margin-top:2px;">Publicado: ' + r.publicado + '</div>' +
         '</div>' +
-        '<button class="btn-sm btn-sm-blue" onclick="editarResultado('' + r.data + '','' + r.numeros + '','' + (r.concurso||'') + '')">Editar</button>' +
+        '<button class="btn-sm btn-sm-blue" onclick="editarResultado(\'' + r.data + '\',\'' + r.numeros + '\',\'' + (r.concurso||'') + '\')">Editar</button>' +
         '</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
         nums.map(function(n) {
