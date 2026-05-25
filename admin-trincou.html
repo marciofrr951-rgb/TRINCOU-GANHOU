@@ -135,6 +135,7 @@ body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh
     <button class="tab" onclick="setTab('gerador',this)">Gerar</button>
     <button class="tab" onclick="setTab('acertos',this)">Acertos</button>
     <button class="tab" onclick="setTab('sorteio',this)">Sorteio</button>
+    <button class="tab" onclick="setTab('cambistas-admin',this)">Equipe</button>
   </div>
 
   <div id="loadingDash" class="loading"><span class="spinner"></span> Carregando...</div>
@@ -601,6 +602,19 @@ async function verDia(data) {
   } catch(e) { alert('Erro: ' + e.message); }
 }
 
+async function excluirDia(data) {
+  if (!confirm('Excluir o dia ' + data.split('-').reverse().join('/') + '? Esta acao nao pode ser desfeita.')) return;
+  try {
+    var body = new URLSearchParams({acao: 'excluirdia', data: data});
+    var resp = await fetch(SCRIPT_URL, {method: 'POST', body: body});
+    var text = await resp.text();
+    if (text.includes('excluido')) {
+      alert('Dia excluido com sucesso!');
+      carregarDias();
+    } else { alert(text); }
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+
 async function fecharDia() {
   if (!confirm('Confirmar fechamento do dia?')) return;
   var diaAtivo = todosDias.find(function(d){ return d.ativo; });
@@ -882,6 +896,65 @@ function filtrarAcertos() {
           (a.obs ? '<div style="font-size:11px;color:#aaa;">' + a.obs + '</div>' : '') +
           '</div><div style="text-align:right;"><div style="font-weight:900;font-size:18px;color:#1a6e1a;">' + fmt(parseFloat(a.comissao)||0) + '</div><span class="badge badge-acerto">Pago</span></div></div>';
       }).join('');
+}
+
+// ── CAMBISTAS ADMIN ──────────────────────────────────
+var listaCambistasCache = [];
+
+async function carregarCambistasAdmin() {
+  try {
+    var resp = await fetch(SCRIPT_URL + '?acao=cambistas');
+    listaCambistasCache = await resp.json();
+    renderizarCambistasAdmin();
+  } catch(e) { console.error(e); }
+}
+
+function renderizarCambistasAdmin() {
+  var el = document.getElementById('listaCambistasAdmin');
+  if (!el) return;
+  if (listaCambistasCache.length === 0) {
+    el.innerHTML = '<div style="padding:16px;font-size:13px;color:#888;text-align:center;">Nenhum cambista cadastrado ainda.</div>';
+    return;
+  }
+  el.innerHTML = listaCambistasCache.map(function(c) {
+    return '<div class="lista-item">' +
+      '<div>' +
+      '<div style="font-weight:700;color:#0d3d0d;font-size:15px;">' + c.nome + '</div>' +
+      '<div style="font-size:12px;color:#888;margin-top:2px;">PIN: ' + c.pin + '</div>' +
+      '</div>' +
+      '<button class="btn-sm btn-sm-red" onclick="excluirCambista('' + c.nome + '')">Remover</button>' +
+      '</div>';
+  }).join('');
+}
+
+async function salvarCambista() {
+  var nome = document.getElementById('cadNome').value.trim();
+  var pin  = document.getElementById('cadPin').value.trim();
+  if (!nome || !pin) { mostrarMsg('cadCambistaMsg', 'Preencha nome e PIN!', 'erro'); return; }
+  if (pin.length < 4) { mostrarMsg('cadCambistaMsg', 'PIN deve ter pelo menos 4 digitos!', 'erro'); return; }
+  try {
+    var body = new URLSearchParams({acao: 'salvarcambista', nome: nome, pin: pin});
+    var resp = await fetch(SCRIPT_URL, {method: 'POST', body: body});
+    var text = await resp.text();
+    if (text.includes('cadastrado') || text.includes('atualizado')) {
+      mostrarMsg('cadCambistaMsg', 'Cambista salvo com sucesso!', 'ok');
+      document.getElementById('cadNome').value = '';
+      document.getElementById('cadPin').value = '';
+      carregarCambistasAdmin();
+    } else { mostrarMsg('cadCambistaMsg', text, 'erro'); }
+  } catch(e) { mostrarMsg('cadCambistaMsg', 'Erro: ' + e.message, 'erro'); }
+}
+
+async function excluirCambista(nome) {
+  if (!confirm('Remover ' + nome + '?')) return;
+  try {
+    var body = new URLSearchParams({acao: 'excluircambista', nome: nome});
+    var resp = await fetch(SCRIPT_URL, {method: 'POST', body: body});
+    var text = await resp.text();
+    if (text.includes('removido')) {
+      carregarCambistasAdmin();
+    } else { alert(text); }
+  } catch(e) { alert('Erro: ' + e.message); }
 }
 
 // ── SORTEIO ──────────────────────────────────────────
