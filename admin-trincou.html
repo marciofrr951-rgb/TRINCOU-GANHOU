@@ -1076,6 +1076,19 @@ async function excluirCambista(nome) {
 }
 
 // ── SORTEIO ──────────────────────────────────────────
+function editarResultado(data, numeros, concurso) {
+  // Preenche o formulario com os dados existentes
+  document.getElementById('sorteioData').value = data;
+  document.getElementById('sorteioConcurso').value = concurso;
+  var nums = numeros.split(',');
+  ['n1','n2','n3','n4','n5'].forEach(function(id, i) {
+    document.getElementById(id).value = nums[i] ? parseInt(nums[i]) : '';
+  });
+  mostrarMsg('sorteioMsg', 'Editando resultado de ' + data.split('-').reverse().join('/') + ' — altere os dados e clique em Publicar resultado.', 'ok');
+  // Scroll para o formulario
+  document.getElementById('sorteioData').scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
 async function publicarResultado() {
   var data = document.getElementById('sorteioData').value;
   if (!data) { mostrarMsg('sorteioMsg', 'Escolha a data!', 'erro'); return; }
