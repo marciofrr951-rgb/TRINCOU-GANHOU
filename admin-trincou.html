@@ -287,6 +287,7 @@ body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh
         <p>Digite os 5 numeros sorteados pela Quina e publique. Os compradores verao automaticamente se ganharam.</p>
         <div class="input-row">
           <div><label>Data do sorteio</label><input type="date" id="sorteioData" style="width:170px;"/></div>
+          <div><label>Numero do concurso</label><input type="number" id="sorteioConcurso" placeholder="Ex: 6789" style="width:150px;"/></div>
         </div>
         <div style="margin-bottom:16px;">
           <label style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:10px;">5 Numeros sorteados (01 a 80)</label>
@@ -1095,7 +1096,8 @@ async function publicarResultado() {
   var numerosStr = nums.map(function(n){ return String(n).padStart(2,'0'); }).join(',');
 
   try {
-    var body = new URLSearchParams({ acao: 'resultado', data: data, numeros: numerosStr });
+    var concurso = document.getElementById('sorteioConcurso').value.trim();
+    var body = new URLSearchParams({ acao: 'resultado', data: data, numeros: numerosStr, concurso: concurso });
     var resp = await fetch(SCRIPT_URL, { method: 'POST', body: body });
     var text = await resp.text();
     if (text.includes('salvo') || text.includes('atualizado')) {
