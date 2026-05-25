@@ -958,7 +958,11 @@ async function consultarBilhetes() {
     // Monta mapa de resultados por data
     const resultados = Array.isArray(respResultado) ? respResultado : [];
     const mapaResultados = {};
-    resultados.forEach(r => { mapaResultados[r.data] = r.numeros.split(',').map(n => parseInt(n)); });
+    const mapaConcursos = {};
+    resultados.forEach(r => {
+      mapaResultados[r.data] = r.numeros.split(',').map(n => parseInt(n));
+      mapaConcursos[r.data] = { concurso: r.concurso || '', data: r.data };
+    });
 
     function verificarJogo(jogo, sorteados) {
       if (!jogo || !sorteados || sorteados.length === 0) return null;
@@ -1003,12 +1007,23 @@ async function consultarBilhetes() {
             ? '<div style="text-align:center;margin-top:12px;"><span style="font-size:15px;font-weight:900;background:rgba(74,222,74,0.15);color:#4ade4a;padding:8px 18px;border-radius:20px;border:2px solid rgba(74,222,74,0.5);letter-spacing:1px;">🏆 PARABENS! Voce ganhou!</span></div>'
             : '';
 
-          // Linha com números sorteados
-          const sorteadosHtml = temResultado
-            ? '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">Sorteados: ' +
-              sorteados.map(function(n){ return '<span style="background:rgba(245,197,24,0.15);color:#f5c518;font-weight:700;font-size:12px;padding:2px 8px;border-radius:6px;border:1px solid rgba(245,197,24,0.3);">' + String(n).padStart(2,'0') + '</span>'; }).join('') +
-              '</div>'
+          // Info concurso e data
+          const infoResultado = mapaConcursos[dataSorteio] || {};
+          const dataFormatada = dataSorteio ? dataSorteio.split('-').reverse().join('/') : '';
+          const concursoInfo = temResultado
+            ? '<div style="margin-bottom:10px;">' +
+              '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px;">' +
+              (infoResultado.concurso ? '🎯 Concurso <strong style="color:#f5c518;">' + infoResultado.concurso + '</strong> &nbsp;·&nbsp; ' : '') +
+              '📅 ' + dataFormatada +
+              '</div>' +
+              '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+              '<span style="font-size:11px;color:rgba(255,255,255,0.4);margin-right:2px;">Sorteados:</span>' +
+              sorteados.map(function(n){
+                return '<div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;font-weight:900;font-size:13px;width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(124,58,237,0.5);">' + String(n).padStart(2,'0') + '</div>';
+              }).join('') +
+              '</div></div>'
             : '';
+          const sorteadosHtml = concursoInfo;
 
           function jogoHtml(label, jogo, ganhouJogo) {
             if (!jogo) return '';
