@@ -674,6 +674,7 @@ async function buscarNaPlanilha(numBilhete) {
         jogo1: cells[1]?.v || '',
         jogo2: cells[2]?.v || '',
         jogo3: cells[3]?.v || '',
+        dataSorteio: cells[4]?.v || '',
         status: cells[5]?.v || 'Disponivel',
       };
     }
@@ -737,11 +738,17 @@ function exibirResultado(bilhete) {
     pill.className = 'status-pill status-disponivel';
   }
 
-  // Sorteio
+  // Sorteio — usa data do bilhete ou CONFIG
   const sorteioEl = document.getElementById('sorteioInfo');
-  sorteioEl.textContent = CONFIG.DATA_SORTEIO
-    ? `📅 Sorteio: ${CONFIG.DATA_SORTEIO}`
-    : '📅 Data do sorteio a ser definida';
+  const dataSorteioExib = bilhete.dataSorteio || CONFIG.DATA_SORTEIO || '';
+  if (dataSorteioExib) {
+    // Formata de yyyy-mm-dd para dd/mm/yyyy se necessário
+    var partes = dataSorteioExib.split('-');
+    var dataFormatada = partes.length === 3 ? partes[2] + '/' + partes[1] + '/' + partes[0] : dataSorteioExib;
+    sorteioEl.textContent = '📅 Sorteio: ' + dataFormatada;
+  } else {
+    sorteioEl.textContent = '📅 Data do sorteio a ser definida';
+  }
 
   // Jogos
   const grid = document.getElementById('jogosGrid');
