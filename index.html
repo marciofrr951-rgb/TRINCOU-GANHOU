@@ -6,796 +6,547 @@
 <title>Trincou Ganhou — Pague seu bilhete</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --green-dark: #0d3d0d;
-    --green-mid: #1a6e1a;
-    --green-bright: #2ecc2e;
-    --gold: #f5c518;
-    --gold-dark: #c9960a;
-    --cream: #fffdf0;
-    --white: #ffffff;
-    --gray-light: #f4f4f0;
-    --gray: #888;
-    --text: #1a1a1a;
-    --red: #e03131;
-    --success: #2f9e44;
-  }
+:root {
+  --green-dark: #0a1f0a;
+  --green-mid: #1a6e1a;
+  --green-bright: #4ade4a;
+  --gold: #f5c518;
+  --gold-dark: #c9960a;
+  --white: #ffffff;
+  --text: #1a1a1a;
+  --red: #e03131;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #0a1a0a;
+  min-height: 100vh;
+  color: var(--white);
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── AGE GATE ── */
+#age-gate {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #080808;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 99999;
+}
+.age-card { background: #0d0d0d; border-radius: 20px; border: 1px solid #2a2a2a; width: 340px; overflow: hidden; text-align: center; }
+.age-top { background: #0d0d0d; padding: 28px 20px 0; }
+.age-logo { font-size: 52px; display: block; margin-bottom: 6px; }
+.age-brand { font-family: 'Bebas Neue', sans-serif; font-size: 30px; color: white; letter-spacing: 3px; text-transform: uppercase; line-height: 1.1; }
+.age-brand span { color: #4ade4a; }
+.age-middle { background: #f0ede0; padding: 10px 28px 24px; }
+.age-question { font-size: 26px; font-weight: 900; color: #111; line-height: 1.2; margin-bottom: 20px; text-transform: uppercase; }
+.age-question span { color: #1a8a1a; }
+.age-msg { display:none; background:#fee2e2; border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:13px; font-weight:700; color:#991b1b; }
+.age-btns { display: flex; gap: 12px; }
+.age-btn-no { flex:1; padding:14px; border-radius:12px; border:2px solid #111; background:transparent; font-family:'Nunito',sans-serif; font-size:17px; font-weight:900; color:#111; cursor:pointer; text-transform:uppercase; }
+.age-btn-yes { flex:1; padding:14px; border-radius:12px; border:2px solid #2ecc2e; background:#111; font-family:'Nunito',sans-serif; font-size:17px; font-weight:900; color:#4ade4a; cursor:pointer; text-transform:uppercase; }
+.age-btn-no:hover { background:#eee; }
+.age-btn-yes:hover { background:#1a1a1a; }
 
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--green-dark);
-    min-height: 100vh;
-    color: var(--text);
-    background-image:
-      radial-gradient(ellipse at 20% 0%, #1a6e1a44 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 100%, #0a2e0a66 0%, transparent 60%);
-  }
+/* ── HEADER NAV ── */
+header {
+  background: rgba(5,15,5,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(74,222,74,0.15);
+  padding: 10px 16px;
+  position: sticky; top: 0; z-index: 100;
+}
+nav { display: flex; gap: 4px; justify-content: center; max-width: 500px; margin: 0 auto; }
+nav button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  padding: 8px 4px;
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: all 0.2s;
+}
+nav button span.nav-icon { font-size: 20px; }
+nav button:hover { color: rgba(255,255,255,0.8); }
+nav button.active {
+  background: rgba(74,222,74,0.1);
+  border: 1px solid rgba(74,222,74,0.3);
+  color: #4ade4a;
+}
 
-  /* ── HEADER ── */
-  header {
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(245,197,24,0.2);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
 
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: var(--white);
-  }
-  .logo span { color: var(--gold); }
+/* ── HERO ── */
+.hero-section {
+  text-align: center;
+  padding: 32px 20px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(74,222,74,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.clover-circle {
+  width: 110px; height: 110px;
+  background: radial-gradient(circle, #1a3a1a, #0a1a0a);
+  border: 2px solid rgba(74,222,74,0.4);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px;
+  margin: 0 auto 16px;
+  box-shadow: 0 0 30px rgba(74,222,74,0.2), 0 0 60px rgba(74,222,74,0.1);
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 15vw, 80px);
+  line-height: 0.9;
+  letter-spacing: 4px;
+  color: white;
+  text-shadow: 0 0 20px rgba(74,222,74,0.3);
+}
+.hero-title .green { color: #4ade4a; }
+.hero-tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px auto 0;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(245,197,24,0.4);
+  border-radius: 30px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.hero-tagline span { color: #f5c518; }
+.hero-badges {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+.hero-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.hero-badge-icon {
+  font-size: 18px;
+}
 
-  nav { display: flex; gap: 6px; }
-  nav button {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.7);
-    padding: 7px 16px;
-    border-radius: 20px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  nav button:hover, nav button.active {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: var(--green-dark);
-  }
+/* ── SEARCH CARD ── */
+.search-section {
+  padding: 0 16px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.search-card {
+  background: rgba(10,30,10,0.9);
+  border: 1px solid rgba(74,222,74,0.3);
+  border-radius: 16px;
+  padding: 20px;
+}
+.search-label {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #4ade4a;
+  margin-bottom: 12px;
+}
+.search-row {
+  display: flex;
+  gap: 10px;
+}
+.num-input {
+  flex: 1;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 8px;
+  text-align: center;
+  border: 2px solid rgba(74,222,74,0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: white;
+  background: rgba(0,0,0,0.5);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.num-input:focus { border-color: #4ade4a; }
+.num-input::placeholder { color: rgba(255,255,255,0.2); letter-spacing: 4px; }
+.btn-buscar {
+  background: linear-gradient(135deg, #2ecc2e, #1a8a1a);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0 20px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(46,204,46,0.3);
+}
+.btn-buscar:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(46,204,46,0.4); }
+.btn-buscar:disabled { background: #333; cursor: not-allowed; transform: none; box-shadow: none; }
 
-  /* ── PAGES ── */
-  .page { display: none; }
-  .page.active { display: block; }
+/* ── BOTTOM BADGES ── */
+.bottom-badges {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 16px 16px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.bottom-badge {
+  background: rgba(10,30,10,0.8);
+  border: 1px solid rgba(74,222,74,0.15);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+.bottom-badge-icon { font-size: 22px; flex-shrink: 0; }
+.trust-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 16px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.trust-card {
+  background: rgba(10,30,10,0.8);
+  border: 1px solid rgba(74,222,74,0.2);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.trust-icon { font-size: 28px; flex-shrink: 0; }
+.trust-text { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.85); line-height: 1.3; }
 
-  /* ── HERO ── */
-  .hero {
-    text-align: center;
-    padding: 48px 24px 32px;
-  }
-  .clover-icon {
-    font-size: 64px;
-    display: block;
-    margin-bottom: 12px;
-    animation: float 3s ease-in-out infinite;
-  }
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-  .hero h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(36px, 8vw, 64px);
-    color: var(--white);
-    letter-spacing: 3px;
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-  .hero h1 span { color: var(--gold); }
-  .hero p {
-    color: rgba(255,255,255,0.6);
-    font-size: 15px;
-    margin-bottom: 32px;
-  }
+/* ── RESULTADO ── */
+#resultado { display: none; margin-top: 16px; }
+.bilhete-info {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 16px 0; padding-top: 16px;
+  border-top: 1px solid rgba(74,222,74,0.2);
+}
+.bilhete-num-label { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 700; text-transform: uppercase; }
+.bilhete-num-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #4ade4a; letter-spacing: 3px; }
+.status-pill { font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.status-disponivel { background: rgba(245,197,24,0.15); color: #f5c518; border: 1px solid rgba(245,197,24,0.3); }
+.status-pago { background: rgba(74,222,74,0.15); color: #4ade4a; border: 1px solid rgba(74,222,74,0.3); }
+.status-pendente { background: rgba(255,100,0,0.15); color: #ff6400; border: 1px solid rgba(255,100,0,0.3); }
+.sorteio-info { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 16px; }
+.jogos-titulo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+.jogos-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.jogo-row { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(74,222,74,0.15); border-radius: 12px; padding: 10px 14px; }
+.jogo-tag { background: rgba(74,222,74,0.1); color: #4ade4a; font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 1px; padding: 4px 10px; border-radius: 8px; min-width: 60px; text-align: center; border: 1px solid rgba(74,222,74,0.2); }
+.jogo-nums { display: flex; gap: 6px; flex-wrap: wrap; }
+.num-ball { background: rgba(0,0,0,0.4); border: 1.5px solid rgba(74,222,74,0.3); color: white; font-family: 'Bebas Neue', sans-serif; font-size: 18px; width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.pix-box { background: rgba(245,197,24,0.05); border: 1.5px solid rgba(245,197,24,0.3); border-radius: 14px; padding: 18px; text-align: center; }
+.pix-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(245,197,24,0.7); margin-bottom: 4px; }
+.pix-valor { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #f5c518; letter-spacing: 2px; line-height: 1; margin-bottom: 16px; }
+.btn-pagar { display: block; width: 100%; background: linear-gradient(135deg, #2ecc2e, #1a8a1a); color: white; border: none; border-radius: 12px; padding: 16px; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(46,204,46,0.3); }
+.btn-pagar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,204,46,0.4); }
+.btn-pagar:disabled { background: #333; cursor: not-allowed; transform: none; box-shadow: none; }
+.pix-note { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 10px; line-height: 1.5; }
+.ja-pago-box { background: rgba(74,222,74,0.1); border: 2px solid rgba(74,222,74,0.4); border-radius: 14px; padding: 20px; text-align: center; display: none; }
+.ja-pago-box .icon { font-size: 36px; margin-bottom: 8px; }
+.ja-pago-box p { font-weight: 700; color: #4ade4a; font-size: 15px; }
+.ja-pago-box small { color: rgba(74,222,74,0.7); font-size: 13px; }
+.msg-erro { background: rgba(224,49,49,0.1); border: 1px solid rgba(224,49,49,0.3); border-radius: 10px; padding: 10px 14px; color: #ff6b6b; font-size: 13px; font-weight: 600; margin-top: 8px; display: none; }
+.msg-loading { text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; padding: 16px; display: none; }
+.spinner { width: 22px; height: 22px; border: 3px solid rgba(74,222,74,0.2); border-top-color: #4ade4a; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── CARD ── */
-  .card {
-    background: var(--white);
-    border-radius: 20px;
-    padding: 28px;
-    max-width: 480px;
-    margin: 0 auto;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
-  }
+/* ── PAGES INNER ── */
+.page-inner { max-width: 480px; margin: 0 auto; padding: 24px 16px 48px; }
+.section-header { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: white; letter-spacing: 2px; margin-bottom: 4px; }
+.section-sub { color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 20px; }
 
-  /* ── INPUT ── */
-  .input-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--gray);
-    margin-bottom: 8px;
-  }
-  .input-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 4px;
-  }
-  .num-input {
-    flex: 1;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    letter-spacing: 8px;
-    text-align: center;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: var(--green-dark);
-    background: var(--gray-light);
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .num-input:focus { border-color: var(--green-mid); background: white; }
-  .num-input::placeholder { color: #ccc; letter-spacing: 4px; }
+/* ── CARD ── */
+.card { background: rgba(10,30,10,0.9); border: 1px solid rgba(74,222,74,0.2); border-radius: 16px; padding: 20px; max-width: 480px; margin: 0 auto 20px; }
+.input-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+.input-row { display: flex; gap: 10px; margin-bottom: 4px; }
 
-  .btn-buscar {
-    background: var(--green-mid);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 0 24px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .btn-buscar:hover { background: var(--green-dark); transform: translateY(-1px); }
-  .btn-buscar:active { transform: translateY(0); }
-  .btn-buscar:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+/* ── GANHADOR ── */
+.ganhador-card { background: rgba(10,30,10,0.8); border: 1px solid rgba(74,222,74,0.2); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+.ganhador-foto { width: 52px; height: 52px; border-radius: 50%; background: rgba(74,222,74,0.1); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 2px solid rgba(74,222,74,0.3); }
+.ganhador-nome { font-weight: 800; font-size: 14px; color: white; }
+.ganhador-detalhe { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.ganhador-premio { margin-left: auto; text-align: right; flex-shrink: 0; }
+.premio-val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #4ade4a; letter-spacing: 1px; }
+.premio-data { font-size: 11px; color: rgba(255,255,255,0.3); }
+.empty-state { text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.3); font-size: 14px; }
+.empty-state span { font-size: 40px; display: block; margin-bottom: 12px; }
 
-  /* ── RESULTADO ── */
-  #resultado { display: none; }
+/* ── CAMBISTAS ── */
+.cambista-card { background: rgba(10,30,10,0.8); border: 1px solid rgba(74,222,74,0.15); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; }
+.cambista-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.cambista-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(74,222,74,0.1); color: #4ade4a; font-family: 'Bebas Neue', sans-serif; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(74,222,74,0.3); }
+.cambista-nome { font-weight: 800; font-size: 14px; color: white; }
+.cambista-regiao { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+.cambista-contatos { display: flex; flex-direction: column; gap: 6px; }
+.contato-link { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4ade4a; font-weight: 600; text-decoration: none; }
+.contato-icon { font-size: 16px; }
 
-  .bilhete-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 20px 0 16px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-  }
-  .bilhete-num-label {
-    font-size: 12px;
-    color: var(--gray);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .bilhete-num-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    color: var(--green-dark);
-    letter-spacing: 3px;
-  }
-  .status-pill {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 5px 14px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .status-disponivel { background: #fff3cd; color: #856404; }
-  .status-pago { background: #d1f7e0; color: #1a5c35; }
-  .status-pendente { background: #ffe8cc; color: #7c4a00; }
+/* ── LOTE ── */
+.divider { border: none; border-top: 1px solid rgba(74,222,74,0.15); margin: 16px 0; }
 
-  .sorteio-info {
-    font-size: 13px;
-    color: var(--gray);
-    margin-bottom: 20px;
-  }
+/* ── FOOTER ── */
+footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-size: 11px; }
 
-  /* ── JOGOS ── */
-  .jogos-titulo {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--gray);
-    margin-bottom: 10px;
-  }
-  .jogos-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .jogo-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--gray-light);
-    border-radius: 12px;
-    padding: 12px 14px;
-  }
-  .jogo-tag {
-    background: var(--green-dark);
-    color: var(--gold);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 14px;
-    letter-spacing: 1px;
-    padding: 4px 10px;
-    border-radius: 8px;
-    min-width: 60px;
-    text-align: center;
-  }
-  .jogo-nums {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .num-ball {
-    background: white;
-    border: 2px solid var(--green-mid);
-    color: var(--green-dark);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 0;
-  }
-
-  /* ── PIX BOX ── */
-  .pix-box {
-    background: linear-gradient(135deg, #f5f5dc, #fffbe6);
-    border: 2px solid var(--gold);
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-  }
-  .pix-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--gold-dark);
-    margin-bottom: 4px;
-  }
-  .pix-valor {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    color: var(--green-dark);
-    letter-spacing: 2px;
-    line-height: 1;
-    margin-bottom: 16px;
-  }
-  .btn-pagar {
-    display: block;
-    width: 100%;
-    background: var(--green-mid);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 16px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 17px;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-  }
-  .btn-pagar:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-  .btn-pagar:disabled { background: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
-
-  .pix-note {
-    font-size: 11px;
-    color: var(--gray);
-    margin-top: 10px;
-    line-height: 1.5;
-  }
-
-  /* ── ERRO / LOADING ── */
-  .msg-erro {
-    background: #fff0f0;
-    border: 1px solid #ffc9c9;
-    border-radius: 10px;
-    padding: 12px 16px;
-    color: var(--red);
-    font-size: 14px;
-    font-weight: 600;
-    margin-top: 8px;
-    display: none;
-  }
-  .msg-loading {
-    text-align: center;
-    color: var(--gray);
-    font-size: 14px;
-    padding: 20px;
-    display: none;
-  }
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #eee;
-    border-top-color: var(--green-mid);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: inline-block;
-    margin-right: 8px;
-    vertical-align: middle;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── GANHADORES ── */
-  .page-inner {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 32px 24px 48px;
-  }
-  .section-header {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 32px;
-    color: var(--white);
-    letter-spacing: 2px;
-    margin-bottom: 4px;
-  }
-  .section-sub {
-    color: rgba(255,255,255,0.5);
-    font-size: 13px;
-    margin-bottom: 24px;
-  }
-  .ganhador-card {
-    background: white;
-    border-radius: 16px;
-    padding: 16px 20px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  }
-  .ganhador-foto {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: var(--gray-light);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    border: 3px solid var(--gold);
-  }
-  .ganhador-nome { font-weight: 800; font-size: 15px; color: var(--green-dark); }
-  .ganhador-detalhe { font-size: 13px; color: var(--gray); margin-top: 2px; }
-  .ganhador-premio {
-    margin-left: auto;
-    text-align: right;
-    flex-shrink: 0;
-  }
-  .premio-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    color: var(--green-mid);
-    letter-spacing: 1px;
-  }
-  .premio-data { font-size: 11px; color: var(--gray); }
-
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: rgba(255,255,255,0.4);
-    font-size: 14px;
-  }
-  .empty-state span { font-size: 40px; display: block; margin-bottom: 12px; }
-
-  /* ── CAMBISTAS ── */
-  .cambista-card {
-    background: white;
-    border-radius: 16px;
-    padding: 18px 20px;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  }
-  .cambista-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-  .cambista-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--green-dark);
-    color: var(--gold);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .cambista-nome { font-weight: 800; font-size: 15px; color: var(--green-dark); }
-  .cambista-regiao { font-size: 12px; color: var(--gray); margin-top: 1px; }
-  .cambista-contatos { display: flex; flex-direction: column; gap: 6px; }
-  .contato-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--green-mid);
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .contato-link:hover { color: var(--green-dark); }
-  .contato-icon { font-size: 16px; }
-
-  /* ── FOOTER ── */
-  footer {
-    text-align: center;
-    padding: 24px;
-    color: rgba(255,255,255,0.25);
-    font-size: 12px;
-  }
-
-  /* ── ALERTA PAGO ── */
-  .ja-pago-box {
-    background: #d1f7e0;
-    border: 2px solid #2f9e44;
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-    display: none;
-  }
-  .ja-pago-box .icon { font-size: 36px; margin-bottom: 8px; }
-  .ja-pago-box p { font-weight: 700; color: #1a5c35; font-size: 15px; }
-  .ja-pago-box small { color: #2f9e44; font-size: 13px; }
-
-  @media (max-width: 520px) {
-    .card { margin: 0 16px; border-radius: 16px; padding: 20px; }
-    nav button { padding: 6px 10px; font-size: 12px; }
-    .logo { font-size: 22px; }
-  }
+@media (max-width: 520px) {
+  .hero-badges { gap: 12px; }
+  .bottom-badges { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
 
-<style>
-#age-gate {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: #0a0a0a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  font-family: 'Nunito', sans-serif;
-}
-.age-card {
-  background: #0a0a0a;
-  border-radius: 20px;
-  border: 1px solid #222;
-  width: 340px;
-  overflow: hidden;
-  text-align: center;
-}
-.age-top {
-  background: #0a0a0a;
-  padding: 28px 20px 0;
-}
-.age-logo {
-  font-size: 52px;
-  display: block;
-  margin-bottom: 6px;
-}
-.age-brand {
-  font-family: 'Nunito', sans-serif;
-  font-size: 28px;
-  font-weight: 900;
-  color: white;
-  letter-spacing: 2px;
-  line-height: 1;
-  text-transform: uppercase;
-}
-.age-brand span { color: #4ade4a; }
-.age-zigzag-top {
-  width: 100%;
-  display: block;
-  margin-top: 20px;
-}
-.age-middle {
-  background: #f0ede0;
-  padding: 10px 28px 20px;
-}
-.age-question {
-  font-size: 28px;
-  font-weight: 900;
-  color: #111;
-  line-height: 1.2;
-  margin-bottom: 24px;
-  text-transform: uppercase;
-}
-.age-question span { color: #2ecc2e; }
-.age-btns {
-  display: flex;
-  gap: 12px;
-}
-.age-btn-no {
-  flex: 1;
-  padding: 16px;
-  border-radius: 12px;
-  border: 2px solid #111;
-  background: transparent;
-  font-family: 'Nunito', sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  color: #111;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.age-btn-yes {
-  flex: 1;
-  padding: 16px;
-  border-radius: 12px;
-  border: 2px solid #2ecc2e;
-  background: #111;
-  font-family: 'Nunito', sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  color: #2ecc2e;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.age-btn-no:hover { background: #eee; }
-.age-btn-yes:hover { background: #1a1a1a; }
-.age-zigzag-bot {
-  width: 100%;
-  display: block;
-}
-</style>
-
+<!-- AGE GATE -->
 <div id="age-gate">
   <div class="age-card">
     <div class="age-top">
       <span class="age-logo">🍀</span>
       <div class="age-brand">TRINCOU <span>GANHOU</span></div>
-      <svg class="age-zigzag-top" viewBox="0 0 340 30" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="0,30 0,15 17,0 34,15 51,0 68,15 85,0 102,15 119,0 136,15 153,0 170,15 187,0 204,15 221,0 238,15 255,0 272,15 289,0 306,15 323,0 340,15 340,30" fill="#f0ede0"/>
+      <svg viewBox="0 0 340 28" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin-top:18px;">
+        <polygon points="0,28 0,14 17,0 34,14 51,0 68,14 85,0 102,14 119,0 136,14 153,0 170,14 187,0 204,14 221,0 238,14 255,0 272,14 289,0 306,14 323,0 340,14 340,28" fill="#f0ede0"/>
       </svg>
     </div>
     <div class="age-middle">
+      <div id="age-msg" class="age-msg">Desculpe. Você é muito jovem para consumir esse conteúdo.</div>
       <div class="age-question">VOCÊ TEM MAIS DE <span>18 ANOS?</span></div>
-      <div id="age-msg" style="display:none;background:#fee2e2;border-radius:10px;padding:12px;margin-bottom:14px;font-size:14px;font-weight:700;color:#991b1b;">Desculpe. Você é muito jovem para consumir esse conteúdo.</div>
       <div class="age-btns">
-        <button class="age-btn-no" onclick="document.getElementById('age-msg').style.display='block';">NÃO</button>
-        <button class="age-btn-yes" onclick="document.getElementById('age-gate').style.display='none';sessionStorage.setItem('age-ok','1');">SIM</button>
+        <button class="age-btn-no" onclick="document.getElementById('age-msg').style.display='block'">NÃO</button>
+        <button class="age-btn-yes" onclick="document.getElementById('age-gate').style.display='none';sessionStorage.setItem('age-ok','1')">SIM</button>
       </div>
     </div>
-    <svg class="age-zigzag-bot" viewBox="0 0 340 30" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="0,0 0,15 17,30 34,15 51,30 68,15 85,30 102,15 119,30 136,15 153,30 170,15 187,30 204,15 221,30 238,15 255,30 272,15 289,30 306,15 323,30 340,15 340,0" fill="#f0ede0"/>
-      <rect x="0" y="14" width="340" height="16" fill="#0a0a0a"/>
+    <svg viewBox="0 0 340 28" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#f0ede0;">
+      <polygon points="0,0 0,14 17,28 34,14 51,28 68,14 85,28 102,14 119,28 136,14 153,28 170,14 187,28 204,14 221,28 238,14 255,28 272,14 289,28 306,14 323,28 340,14 340,0" fill="#0d0d0d"/>
     </svg>
   </div>
 </div>
-
-<script>
-if (sessionStorage.getItem('age-ok') === '1') {
-  document.getElementById('age-gate').style.display = 'none';
-}
-</script>
-
+<script>if(sessionStorage.getItem('age-ok')==='1'){document.getElementById('age-gate').style.display='none';}</script>
 
 <header>
-  <div class="logo">TRINCOU <span>GANHOU</span></div>
   <nav>
-    <button class="active" onclick="showPage('pagar', this)">🎟️ Pagar</button>
-    <button onclick="showPage('lote', this)">📦 Lote</button>
-    <button onclick="showPage('meusbilhetes', this)">🔍 Meus</button>
-    <button onclick="showPage('ganhadores', this)">🏆 Ganhadores</button>
-    <button onclick="showPage('cambistas', this)">👥 Cambistas</button>
+    <button class="active" onclick="showPage('pagar',this)"><span class="nav-icon">🎟️</span>Pagar</button>
+    <button onclick="showPage('lote',this)"><span class="nav-icon">📦</span>Lote</button>
+    <button onclick="showPage('meusbilhetes',this)"><span class="nav-icon">🔍</span>Meus</button>
+    <button onclick="showPage('ganhadores',this)"><span class="nav-icon">🏆</span>Ganhadores</button>
+    <button onclick="showPage('cambistas',this)"><span class="nav-icon">👥</span>Cambistas</button>
   </nav>
 </header>
 
-<!-- ══════════════ PÁGINA PAGAR ══════════════ -->
+<!-- PÁGINA PAGAR -->
 <div id="page-pagar" class="page active">
-  <div class="hero">
-    <span class="clover-icon">🍀</span>
-    <h1>PAGUE SEU<br><span>BILHETE AQUI</span></h1>
-    <p>Digite o número do seu bilhete para ver os jogos e pagar</p>
+  <div class="hero-section">
+    <div class="clover-circle">🍀</div>
+    <div class="hero-title">TRINCOU<br><span class="green">GANHOU</span></div>
+    <div class="hero-tagline">✦ AQUI O SEU PALPITE <span>VALE OURO!</span> ✦</div>
+    <div class="hero-badges">
+      <div class="hero-badge"><span class="hero-badge-icon">⚡</span><div>RÁPIDO<br><small style="font-weight:400;font-size:10px;opacity:0.6;">Pagamento instantâneo</small></div></div>
+      <div class="hero-badge"><span class="hero-badge-icon">🔒</span><div>SEGURO<br><small style="font-weight:400;font-size:10px;opacity:0.6;">Ambiente protegido</small></div></div>
+      <div class="hero-badge"><span class="hero-badge-icon">✅</span><div>OFICIAL<br><small style="font-weight:400;font-size:10px;opacity:0.6;">Resultados da Quina</small></div></div>
+    </div>
   </div>
 
-  <div class="card">
-    <div class="input-label">Número do bilhete</div>
-    <div class="input-row">
-      <input
-        type="tel"
-        id="numBilhete"
-        class="num-input"
-        maxlength="4"
-        placeholder="0000"
-        oninput="this.value=this.value.replace(/\D/g,'')"
-        onkeydown="if(event.key==='Enter') buscarBilhete()"
-      />
-      <button class="btn-buscar" id="btnBuscar" onclick="buscarBilhete()">Buscar</button>
-    </div>
-    <div class="msg-erro" id="msgErro"></div>
-    <div class="msg-loading" id="msgLoading">
-      <span class="spinner"></span> Buscando bilhete...
-    </div>
-
-    <div id="resultado">
-      <div class="bilhete-info">
-        <div>
-          <div class="bilhete-num-label">Bilhete nº</div>
-          <div class="bilhete-num-val" id="numShow"></div>
-        </div>
-        <div class="status-pill" id="statusPill"></div>
+  <div class="search-section">
+    <div class="search-card">
+      <div class="search-label">Digite o número do seu bilhete</div>
+      <div class="search-row">
+        <input type="tel" id="numBilhete" class="num-input" maxlength="4" placeholder="0000"
+          oninput="this.value=this.value.replace(/\D/g,'')"
+          onkeydown="if(event.key==='Enter') buscarBilhete()"/>
+        <button class="btn-buscar" id="btnBuscar" onclick="buscarBilhete()">BUSCAR</button>
       </div>
-      <div class="sorteio-info" id="sorteioInfo"></div>
+      <div class="msg-erro" id="msgErro"></div>
+      <div class="msg-loading" id="msgLoading"><span class="spinner"></span> Buscando bilhete...</div>
 
-      <div class="jogos-titulo">Seus jogos</div>
-      <div class="jogos-grid" id="jogosGrid"></div>
+      <div id="resultado">
+        <div class="bilhete-info">
+          <div>
+            <div class="bilhete-num-label">Bilhete nº</div>
+            <div class="bilhete-num-val" id="numShow"></div>
+          </div>
+          <div class="status-pill" id="statusPill"></div>
+        </div>
+        <div class="sorteio-info" id="sorteioInfo"></div>
+        <div class="jogos-titulo">Seus jogos</div>
+        <div class="jogos-grid" id="jogosGrid"></div>
 
-      <!-- Se já pago -->
-      <div class="ja-pago-box" id="jaPagoBox">
-        <div class="icon">✅</div>
-        <p>Este bilhete já está pago!</p>
-        <small>Boa sorte no sorteio 🍀</small>
-      </div>
+        <div class="ja-pago-box" id="jaPagoBox">
+          <div class="icon">✅</div>
+          <p>Este bilhete já está pago!</p>
+          <small>Boa sorte no sorteio 🍀</small>
+        </div>
 
-      <!-- Box de pagamento -->
-      <div class="pix-box" id="pixBox">
-        <div class="pix-label">Valor do bilhete</div>
-        <div class="pix-valor">R$ 2,50</div>
-        <div style="margin-bottom:12px;">
-          <div class="input-label" style="text-align:left;color:#7a6800;margin-bottom:6px;">👥 Cambista (opcional)</div>
-          <select id="cambistaSelect" style="width:100%;padding:10px 14px;border:1.5px solid #e6d200;border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:#fffdf0;color:#3a3000;outline:none;margin-bottom:10px;">
-            <option value="">Sem cambista (compra direta)</option>
-          </select>
-        </div>
-        <div style="margin-bottom:12px;">
-          <div class="input-label" style="text-align:left;color:#7a6800;margin-bottom:6px;">📱 Seu WhatsApp <span style="color:#e03131;">*obrigatório</span></div>
-          <input type="tel" id="telefoneInput"
-            style="width:100%;padding:10px 14px;border:1.5px solid #e6d200;border-radius:10px;font-size:15px;font-family:var(--font-sans);background:#fffdf0;color:#3a3000;outline:none;"
-            placeholder="(38) 99999-9999"
-            oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"/>
-          <div id="telefoneErro" style="display:none;color:#e03131;font-size:12px;margin-top:4px;font-weight:700;">⚠️ Preencha seu WhatsApp para continuar!</div>
-        </div>
-        <button class="btn-pagar" id="btnPagar" onclick="gerarPagamento()">
-          💸 Pagar via PIX
-        </button>
-        <div style="margin-top:10px;">
-          <button onclick="mostrarPagoDinheiro()" style="width:100%;background:#f0f0f0;border:1.5px solid #ccc;border-radius:12px;padding:12px;font-family:var(--font-sans);font-size:14px;font-weight:700;color:#555;cursor:pointer;">
-            💵 Registrar pago em dinheiro
-          </button>
-        </div>
-        <div id="pagoDinheiroBox" style="display:none;margin-top:12px;background:#f0f7f0;border:1.5px solid #1a6e1a;border-radius:12px;padding:14px;">
-          <button onclick="registrarDinheiro()" style="width:100%;background:#1a6e1a;color:white;border:none;border-radius:10px;padding:12px;font-family:var(--font-sans);font-size:15px;font-weight:700;cursor:pointer;">
-            ✅ Confirmar pagamento em dinheiro
-          </button>
-          <div id="dinheiroMsg" style="font-size:12px;color:#555;margin-top:8px;text-align:center;"></div>
-        </div>
-        <div class="pix-note" id="pixNote">
-          Após o pagamento, seu bilhete será validado automaticamente.
+        <div class="pix-box" id="pixBox">
+          <div class="pix-label">Valor do bilhete</div>
+          <div class="pix-valor">R$ 2,50</div>
+          <div style="margin-bottom:12px;text-align:left;">
+            <div class="input-label" style="color:rgba(245,197,24,0.7);margin-bottom:6px;">👥 Cambista (opcional)</div>
+            <select id="cambistaSelect" style="width:100%;padding:10px 14px;border:1.5px solid rgba(74,222,74,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;margin-bottom:10px;">
+              <option value="">Sem cambista (compra direta)</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px;text-align:left;">
+            <div class="input-label" style="color:rgba(245,197,24,0.7);margin-bottom:6px;">📱 Seu WhatsApp <span style="color:#ff6b6b;">*obrigatório</span></div>
+            <input type="tel" id="telefoneInput"
+              style="width:100%;padding:10px 14px;border:1.5px solid rgba(245,197,24,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;"
+              placeholder="(38) 99999-9999"
+              oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"/>
+            <div id="telefoneErro" style="display:none;color:#ff6b6b;font-size:12px;margin-top:4px;font-weight:700;">⚠️ Preencha seu WhatsApp para continuar!</div>
+          </div>
+          <button class="btn-pagar" id="btnPagar" onclick="gerarPagamento()">💸 Pagar via PIX</button>
+          <div style="margin-top:10px;">
+            <button onclick="mostrarPagoDinheiro()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;">
+              💵 Registrar pago em dinheiro
+            </button>
+          </div>
+          <div id="pagoDinheiroBox" style="display:none;margin-top:12px;background:rgba(74,222,74,0.05);border:1.5px solid rgba(74,222,74,0.3);border-radius:12px;padding:14px;">
+            <div class="input-label" style="color:#4ade4a;margin-bottom:6px;">🔑 PIN do cambista</div>
+            <input type="password" id="cambistaPin"
+              style="width:100%;padding:10px 14px;border:1.5px solid rgba(74,222,74,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;margin-bottom:10px;"
+              placeholder="Digite seu PIN" oninput="this.value=this.value.replace(/\D/g,'')" maxlength="10"/>
+            <button onclick="registrarDinheiro()" style="width:100%;background:rgba(74,222,74,0.15);color:#4ade4a;border:1px solid rgba(74,222,74,0.4);border-radius:10px;padding:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">
+              ✅ Confirmar pagamento em dinheiro
+            </button>
+            <div id="dinheiroMsg" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;text-align:center;"></div>
+          </div>
+          <div class="pix-note" id="pixNote">Após o pagamento, seu bilhete será validado automaticamente.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <footer>trincouganhou.com.br &nbsp;·&nbsp; 18+ &nbsp;·&nbsp; Baseado nos resultados da Loteria Quina (CEF)</footer>
+  <div class="bottom-badges">
+    <div class="bottom-badge"><span class="bottom-badge-icon">🔒</span>PAGAMENTO SEGURO</div>
+    <div class="bottom-badge"><span class="bottom-badge-icon">🏅</span>SORTEIOS AUDITÁVEIS</div>
+    <div class="bottom-badge"><span class="bottom-badge-icon">🍀</span>RESULTADO OFICIAL DA QUINA</div>
+    <div class="bottom-badge"><span class="bottom-badge-icon">💬</span>SUPORTE WHATSAPP</div>
+  </div>
+  <div class="trust-row">
+    <div class="trust-card"><span class="trust-icon">🔒</span><div class="trust-text">Site 100% seguro<br><span style="opacity:0.6;font-weight:400;">Seus dados protegidos</span></div></div>
+    <div class="trust-card"><span class="trust-icon">18+</span><div class="trust-text">Jogue com<br><span style="opacity:0.6;font-weight:400;">responsabilidade</span></div></div>
+  </div>
+  <footer>trincouganhou.com.br · 18+ · Baseado nos resultados da Loteria Quina (CEF)</footer>
 </div>
 
-<!-- ══════════════ PÁGINA LOTE ══════════════ -->
+<!-- PÁGINA LOTE -->
 <div id="page-lote" class="page">
-  <div class="hero">
-    <span class="clover-icon">📦</span>
-    <h1>PAGAMENTO<br><span>EM LOTE</span></h1>
-    <p>Adicione vários bilhetes e pague tudo de uma vez</p>
+  <div class="hero-section" style="padding:24px 20px 16px;">
+    <div style="font-size:48px;margin-bottom:8px;">📦</div>
+    <div class="hero-title" style="font-size:40px;">PAGAMENTO <span class="green">EM LOTE</span></div>
+    <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:8px;">Adicione vários bilhetes e pague tudo de uma vez</p>
   </div>
-
-  <div class="card">
-    <div class="input-label">Adicionar bilhete ao lote</div>
-    <div class="input-row">
-      <input type="tel" id="loteInput" class="num-input" maxlength="4" placeholder="0000"
-        oninput="this.value=this.value.replace(/\D/g,'')"
-        onkeydown="if(event.key==='Enter') adicionarLote()"/>
-      <button class="btn-buscar" id="btnLote" onclick="adicionarLote()">+ Adicionar</button>
-    </div>
-    <div class="msg-erro" id="loteErro"></div>
-    <div class="msg-loading" id="loteLoading"><span class="spinner"></span> Buscando...</div>
-
-    <!-- Lista de bilhetes -->
-    <div id="loteLista" style="display:none; margin-top:16px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <p class="section-title" style="margin:0;">Bilhetes no lote</p>
-        <button onclick="limparLote()" style="background:none;border:none;color:#e03131;font-size:12px;cursor:pointer;font-family:var(--font-sans);font-weight:700;">🗑️ Limpar tudo</button>
+  <div class="search-section">
+    <div class="search-card">
+      <div class="search-label">Adicionar bilhete ao lote</div>
+      <div class="search-row">
+        <input type="tel" id="loteInput" class="num-input" maxlength="4" placeholder="0000"
+          oninput="this.value=this.value.replace(/\D/g,'')"
+          onkeydown="if(event.key==='Enter') adicionarLote()"/>
+        <button class="btn-buscar" id="btnLote" onclick="adicionarLote()">+ ADD</button>
       </div>
-      <div id="loteItens"></div>
+      <div class="msg-erro" id="loteErro"></div>
+      <div class="msg-loading" id="loteLoading"><span class="spinner"></span> Buscando...</div>
 
-      <hr class="divider">
-
-      <div class="pix-box">
-        <div class="pix-label">Total do lote</div>
-        <div class="pix-valor" id="loteTotalValor">R$ 0,00</div>
-        <div style="font-size:12px; color:#7a6800; margin-bottom:12px;" id="loteTotalQtd"></div>
-        <div style="margin-bottom:12px;">
-          <div class="input-label" style="text-align:left;color:#7a6800;margin-bottom:6px;">📱 Seu WhatsApp (para contato se ganhar)</div>
-          <input type="tel" id="loteTelefoneInput"
-            style="width:100%;padding:10px 14px;border:1.5px solid #e6d200;border-radius:10px;font-size:15px;font-family:var(--font-sans);background:#fffdf0;color:#3a3000;outline:none;"
-            placeholder="(38) 99999-9999"
-            oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"/>
+      <div id="loteLista" style="display:none;margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);">Bilhetes no lote</p>
+          <button onclick="limparLote()" style="background:none;border:none;color:#ff6b6b;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;">🗑️ Limpar</button>
         </div>
-        <button class="btn-pagar" id="btnPagarLote" onclick="pagarLote()">
-          💸 Pagar lote via PIX
-        </button>
-        <div class="pix-note" id="loteNote">
-          Após o pagamento, todos os bilhetes serão validados automaticamente.
+        <div id="loteItens"></div>
+        <hr class="divider">
+        <div class="pix-box">
+          <div class="pix-label">Total do lote</div>
+          <div class="pix-valor" id="loteTotalValor">R$ 0,00</div>
+          <div style="font-size:12px;color:rgba(245,197,24,0.6);margin-bottom:12px;" id="loteTotalQtd"></div>
+          <div style="margin-bottom:12px;text-align:left;">
+            <div class="input-label" style="color:rgba(245,197,24,0.7);margin-bottom:6px;">📱 Seu WhatsApp</div>
+            <input type="tel" id="loteTelefoneInput"
+              style="width:100%;padding:10px 14px;border:1.5px solid rgba(245,197,24,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;"
+              placeholder="(38) 99999-9999"
+              oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"/>
+          </div>
+          <button class="btn-pagar" id="btnPagarLote" onclick="pagarLote()">💸 Pagar lote via PIX</button>
+          <div class="pix-note" id="loteNote">Após o pagamento, todos os bilhetes serão validados automaticamente.</div>
         </div>
       </div>
-    </div>
-
-    <div id="loteVazio" style="text-align:center; padding:24px; color:var(--color-text-secondary); font-size:14px;">
-      Nenhum bilhete adicionado ainda.<br>Digite um número acima para começar!
+      <div id="loteVazio" style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-size:14px;">
+        Nenhum bilhete adicionado ainda.<br>Digite um número acima para começar!
+      </div>
     </div>
   </div>
-
-  <footer>trincouganhou.com.br &nbsp;·&nbsp; 18+ &nbsp;·&nbsp; Baseado nos resultados da Loteria Quina (CEF)</footer>
+  <footer>trincouganhou.com.br · 18+ · Baseado nos resultados da Loteria Quina (CEF)</footer>
 </div>
 
-<!-- ══════════════ PÁGINA MEUS BILHETES ══════════════ -->
+<!-- PÁGINA MEUS BILHETES -->
 <div id="page-meusbilhetes" class="page">
-  <div class="hero">
-    <span class="clover-icon">🔍</span>
-    <h1>MEUS<br><span>BILHETES</span></h1>
-    <p>Consulte seus bilhetes pagos pelo WhatsApp</p>
+  <div class="hero-section" style="padding:24px 20px 16px;">
+    <div style="font-size:48px;margin-bottom:8px;">🔍</div>
+    <div class="hero-title" style="font-size:40px;">MEUS <span class="green">BILHETES</span></div>
+    <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:8px;">Consulte seus bilhetes pagos pelo WhatsApp</p>
   </div>
-
-  <div class="card">
-    <div class="input-label">Seu WhatsApp</div>
-    <div class="input-row">
-      <input type="tel" id="consultaTelefone"
-        class="num-input"
-        style="font-size:18px;letter-spacing:1px;"
-        placeholder="(38) 99999-9999"
-        oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"
-        onkeydown="if(event.key==='Enter') consultarBilhetes()"/>
-      <button class="btn-buscar" onclick="consultarBilhetes()">Buscar</button>
-    </div>
-    <div class="msg-erro" id="consultaErro"></div>
-    <div class="msg-loading" id="consultaLoading"><span class="spinner"></span> Consultando...</div>
-
-    <div id="consultaResultado" style="display:none; margin-top:16px;">
-      <div id="consultaLista"></div>
+  <div class="search-section">
+    <div class="search-card">
+      <div class="search-label">Seu WhatsApp</div>
+      <div class="search-row">
+        <input type="tel" id="consultaTelefone" class="num-input"
+          style="font-size:18px;letter-spacing:1px;"
+          placeholder="(38) 99999-9999"
+          oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"
+          onkeydown="if(event.key==='Enter') consultarBilhetes()"/>
+        <button class="btn-buscar" onclick="consultarBilhetes()">BUSCAR</button>
+      </div>
+      <div class="msg-erro" id="consultaErro"></div>
+      <div class="msg-loading" id="consultaLoading"><span class="spinner"></span> Consultando...</div>
+      <div id="consultaResultado" style="display:none;margin-top:16px;">
+        <div id="consultaLista"></div>
+      </div>
     </div>
   </div>
-
-  <footer>trincouganhou.com.br &nbsp;·&nbsp; 18+ &nbsp;·&nbsp; Baseado nos resultados da Loteria Quina (CEF)</footer>
+  <footer>trincouganhou.com.br · 18+ · Baseado nos resultados da Loteria Quina (CEF)</footer>
 </div>
 
-<!-- ══════════════ PÁGINA GANHADORES ══════════════ -->
+<!-- PÁGINA GANHADORES -->
 <div id="page-ganhadores" class="page">
   <div class="page-inner">
     <div class="section-header">🏆 Ganhadores</div>
     <div class="section-sub">Últimos sortudos do Trincou Ganhou</div>
     <div id="listaGanhadores">
-      <!-- Preencha aqui com os ganhadores reais. Exemplo abaixo: -->
       <div class="empty-state">
         <span>🍀</span>
         O próximo ganhador pode ser você!<br>
@@ -805,13 +556,12 @@ if (sessionStorage.getItem('age-ok') === '1') {
   </div>
 </div>
 
-<!-- ══════════════ PÁGINA CAMBISTAS ══════════════ -->
+<!-- PÁGINA CAMBISTAS -->
 <div id="page-cambistas" class="page">
   <div class="page-inner">
     <div class="section-header">👥 Cambistas</div>
     <div class="section-sub">Encontre um cambista autorizado na sua região</div>
     <div id="listaCambistas">
-      <!-- EDITE AQUI: adicione ou remova cambistas conforme necessário -->
       <div class="cambista-card">
         <div class="cambista-header">
           <div class="cambista-avatar">CA</div>
@@ -826,37 +576,6 @@ if (sessionStorage.getItem('age-ok') === '1') {
           </a>
         </div>
       </div>
-
-      <div class="cambista-card">
-        <div class="cambista-header">
-          <div class="cambista-avatar">FL</div>
-          <div>
-            <div class="cambista-nome">Fernanda Lima</div>
-            <div class="cambista-regiao">📍 Manga / MG</div>
-          </div>
-        </div>
-        <div class="cambista-contatos">
-          <a class="contato-link" href="https://wa.me/5538999990002" target="_blank">
-            <span class="contato-icon">💬</span> (38) 99999-0002
-          </a>
-        </div>
-      </div>
-
-      <div class="cambista-card">
-        <div class="cambista-header">
-          <div class="cambista-avatar">RM</div>
-          <div>
-            <div class="cambista-nome">Roberto Moura</div>
-            <div class="cambista-regiao">📍 Miravânia / MG</div>
-          </div>
-        </div>
-        <div class="cambista-contatos">
-          <a class="contato-link" href="https://wa.me/5538999990003" target="_blank">
-            <span class="contato-icon">💬</span> (38) 99999-0003
-          </a>
-        </div>
-      </div>
-      <!-- FIM DOS CAMBISTAS -->
     </div>
   </div>
 </div>
