@@ -582,8 +582,9 @@
     </div>
     <div class="age-middle">
       <div class="age-question">VOCÊ TEM MAIS DE <span>18 ANOS?</span></div>
+      <div id="age-msg" style="display:none;background:#fee2e2;border-radius:10px;padding:12px;margin-bottom:14px;font-size:14px;font-weight:700;color:#991b1b;">Desculpe. Você é muito jovem para consumir esse conteúdo.</div>
       <div class="age-btns">
-        <button class="age-btn-no" onclick="document.getElementById('age-gate').style.display='none';setTimeout(function(){document.getElementById('age-gate').style.display='flex';},100);">NÃO</button>
+        <button class="age-btn-no" onclick="document.getElementById('age-msg').style.display='block';">NÃO</button>
         <button class="age-btn-yes" onclick="document.getElementById('age-gate').style.display='none';sessionStorage.setItem('age-ok','1');">SIM</button>
       </div>
     </div>
