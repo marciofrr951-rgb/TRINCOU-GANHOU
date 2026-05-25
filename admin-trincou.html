@@ -213,7 +213,8 @@ body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh
         <h3>Gerar bilhetes para um dia</h3>
         <p>Gera bilhetes com jogos unicos para a data escolhida. Pode gerar varios dias sem interferir nas vendas.</p>
         <div class="input-row">
-          <div><label>Data do sorteio</label><input type="date" id="dataSorteio" style="width:170px;"/></div>
+          <div><label>Data do sorteio (quando ocorre o sorteio)</label><input type="date" id="dataSorteio" style="width:170px;"/></div>
+          <div><label>Data do concurso</label><input type="date" id="dataConcurso" style="width:170px;"/></div>
           <div><label>Quantidade</label><input type="number" id="qtdBilhetes" value="200" min="1" max="500" style="width:120px;"/></div>
           <button class="btn-green" onclick="gerarBilhetes()">Gerar</button>
         </div>
@@ -371,6 +372,7 @@ function entrar() {
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('dataSorteio').value = new Date().toISOString().split('T')[0];
+    document.getElementById('dataConcurso').value = new Date().toISOString().split('T')[0];
     document.getElementById('sorteioData').value = new Date().toISOString().split('T')[0];
     carregarTudo();
     verificarStatusPagamentos();
@@ -911,6 +913,7 @@ function gerarBilhetes() {
 async function enviarPlanilha() {
   if (!bilhetesGerados.length) return;
   var data = document.getElementById('dataSorteio').value;
+  var dataConcurso = document.getElementById('dataConcurso').value;
   try {
     var body = new URLSearchParams({acao:'gerar', data:data, bilhetes:JSON.stringify(bilhetesGerados)});
     var resp = await fetch(SCRIPT_URL, {method:'POST', body:body});
@@ -920,6 +923,12 @@ async function enviarPlanilha() {
       document.getElementById('previewWrap').style.display = 'none';
       bilhetesGerados = [];
       carregarDias();
+      // Se informou data do concurso, já salva automaticamente
+      if (dataConcurso) {
+        var body2 = new URLSearchParams({acao: 'datasorteio', data: dataConcurso});
+        await fetch(SCRIPT_URL, {method: 'POST', body: body2});
+        mostrarMsg('geradorMsg', text + ' | Data do sorteio definida: ' + dataConcurso.split('-').reverse().join('/'), 'ok');
+      }
     } else { mostrarMsg('geradorMsg', text, 'erro'); }
   } catch(e) { mostrarMsg('geradorMsg', 'Erro: ' + e.message, 'erro'); }
 }
