@@ -536,6 +536,12 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
           <div class="pix-valor" id="loteTotalValor">R$ 0,00</div>
           <div style="font-size:12px;color:rgba(245,197,24,0.6);margin-bottom:12px;" id="loteTotalQtd"></div>
           <div style="margin-bottom:12px;text-align:left;">
+            <div class="input-label" style="color:rgba(245,197,24,0.7);margin-bottom:6px;">👥 Cambista (opcional)</div>
+            <select id="loteCambistaSelect" style="width:100%;padding:10px 14px;border:1.5px solid rgba(74,222,74,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;margin-bottom:10px;">
+              <option value="">Sem cambista (compra direta)</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px;text-align:left;">
             <div class="input-label" style="color:rgba(245,197,24,0.7);margin-bottom:6px;">📱 Seu WhatsApp</div>
             <input type="tel" id="loteTelefoneInput"
               style="width:100%;padding:10px 14px;border:1.5px solid rgba(245,197,24,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;"
@@ -543,6 +549,12 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
               oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"/>
           </div>
           <button class="btn-pagar" id="btnPagarLote" onclick="pagarLote()">💸 Pagar lote via PIX</button>
+          <div style="margin-top:10px;">
+            <button onclick="registrarLoteDinheiro()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;">
+              💵 Registrar lote pago em dinheiro
+            </button>
+            <div id="loteDinheiroMsg" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;text-align:center;"></div>
+          </div>
           <div class="pix-note" id="loteNote">Após o pagamento, todos os bilhetes serão validados automaticamente.</div>
         </div>
       </div>
@@ -1025,14 +1037,15 @@ async function carregarCambistasSelect() {
     var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=cambistas');
     var cambistas = await resp.json();
 
-    // Atualiza dropdown do checkout
+    // Atualiza dropdowns de cambista
+    var opcoes = '<option value="">Sem cambista (compra direta)</option>' +
+      cambistas.map(function(c) {
+        return '<option value="' + c.nome + '">' + c.nome + '</option>';
+      }).join('');
     var sel = document.getElementById('cambistaSelect');
-    if (sel) {
-      sel.innerHTML = '<option value="">Sem cambista (compra direta)</option>' +
-        cambistas.map(function(c) {
-          return '<option value="' + c.nome + '">' + c.nome + '</option>';
-        }).join('');
-    }
+    if (sel) sel.innerHTML = opcoes;
+    var selLote = document.getElementById('loteCambistaSelect');
+    if (selLote) selLote.innerHTML = opcoes;
 
     // Atualiza lista da página Cambistas
     var lista = document.getElementById('listaCambistas');
@@ -1061,6 +1074,30 @@ async function carregarCambistasSelect() {
 window.addEventListener('DOMContentLoaded', function() {
   carregarCambistasSelect();
 });
+
+async function registrarLoteDinheiro() {
+  if (loteItens.length === 0) return;
+  const cambista = document.getElementById('loteCambistaSelect') ? document.getElementById('loteCambistaSelect').value : '';
+  const telefone = document.getElementById('loteTelefoneInput').value.trim();
+  const msg = document.getElementById('loteDinheiroMsg');
+
+  msg.style.color = 'rgba(255,255,255,0.5)'; msg.textContent = 'Registrando...';
+
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec';
+  let sucesso = 0;
+  for (const b of loteItens) {
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'bilhete=' + encodeURIComponent(b.id) + '&status=PAGO+DINHEIRO&telefone=' + encodeURIComponent(telefone) + '&cambista=' + encodeURIComponent(cambista) + '&acao=baixa',
+      });
+      sucesso++;
+    } catch(e) {}
+  }
+  msg.style.color = '#4ade4a';
+  msg.textContent = sucesso + ' bilhete(s) registrados como PAGO EM DINHEIRO!';
+}
 
 function showPage(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1176,6 +1213,7 @@ async function pagarLote() {
         valor: total,
         descricao: `Trincou Ganhou - Lote ${loteItens.length} bilhetes (${ids})`,
         telefone: document.getElementById('loteTelefoneInput').value.trim(),
+        cambista: document.getElementById('loteCambistaSelect') ? document.getElementById('loteCambistaSelect').value : '',
       })
     });
     const data = await resp.json();
