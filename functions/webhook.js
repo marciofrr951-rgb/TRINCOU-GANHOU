@@ -18,9 +18,11 @@ export async function onRequestPost(context) {
     if (payment.status !== 'approved') return new Response('OK', { status: 200 });
     if (!payment.external_reference) return new Response('OK', { status: 200 });
 
+    // external_reference: "ids|telefone|cambista"
     const parts = payment.external_reference.split('|');
-    const idsStr = parts[0];
+    const idsStr  = parts[0];
     const telefone = parts[1] || '';
+    const cambista = parts[2] || '';
     const ids = idsStr.split(',').map(id => id.trim()).filter(Boolean);
 
     const scriptUrl = env.APPS_SCRIPT_URL;
@@ -28,7 +30,7 @@ export async function onRequestPost(context) {
       await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `bilhete=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}`,
+        body: `bilhete=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}&cambista=${encodeURIComponent(cambista)}`,
       });
     }
 
