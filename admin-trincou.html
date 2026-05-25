@@ -183,6 +183,21 @@ body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh
     <div class="tab-content" id="tab-dias">
       <div class="section-title">Dias gerados</div>
       <div id="listaDias"></div>
+      <!-- DATA SORTEIO -->
+      <div class="white-card" style="margin-top:16px;">
+        <h3>📅 Data do sorteio</h3>
+        <p>Define a data do sorteio para os bilhetes do dia ativo. Aparece no site para os compradores.</p>
+        <div class="input-row">
+          <div>
+            <label>Data do sorteio</label>
+            <input type="date" id="inputDataSorteio" style="width:180px;"/>
+          </div>
+          <button class="btn-green" onclick="salvarDataSorteio()">Salvar</button>
+        </div>
+        <div style="font-size:13px;color:#888;margin-top:4px;" id="dataAtualSorteio"></div>
+        <div class="msg-box" id="dataSorteioMsg"></div>
+      </div>
+
       <div class="fechar-box" id="fecharBox" style="display:none;">
         <h3>Fechar dia atual</h3>
         <p>Registra os acertos de todos os cambistas e arquiva os dados do dia.</p>
@@ -376,6 +391,7 @@ function setTab(nome, btn) {
   document.getElementById('tab-' + nome).classList.add('ativo');
   btn.classList.add('ativo');
   if (nome === 'equipe') carregarCambistasAdmin();
+  if (nome === 'dias') carregarDataSorteio();
   if (nome === 'acertos') verificarStatusPagamentos();
   if (nome === 'sorteio') carregarResultados();
 }
@@ -623,6 +639,33 @@ async function verDia(data) {
     win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Dia ' + data + '</title></head><body style="background:#f5f5f5;">' + html + '</body></html>');
     win.document.close();
   } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function salvarDataSorteio() {
+  var data = document.getElementById('inputDataSorteio').value;
+  if (!data) { mostrarMsg('dataSorteioMsg', 'Escolha uma data!', 'erro'); return; }
+  try {
+    var body = new URLSearchParams({acao: 'datasorteio', data: data});
+    var resp = await fetch(SCRIPT_URL, {method: 'POST', body: body});
+    var text = await resp.text();
+    if (text.includes('definida')) {
+      mostrarMsg('dataSorteioMsg', 'Data definida: ' + data.split('-').reverse().join('/'), 'ok');
+      document.getElementById('dataAtualSorteio').textContent = 'Data atual: ' + data.split('-').reverse().join('/');
+    } else {
+      mostrarMsg('dataSorteioMsg', text, 'erro');
+    }
+  } catch(e) { mostrarMsg('dataSorteioMsg', 'Erro: ' + e.message, 'erro'); }
+}
+
+async function carregarDataSorteio() {
+  try {
+    var resp = await fetch(SCRIPT_URL + '?acao=datasorteio');
+    var data = await resp.text();
+    if (data) {
+      document.getElementById('dataAtualSorteio').textContent = 'Data atual: ' + data.split('-').reverse().join('/');
+      document.getElementById('inputDataSorteio').value = data;
+    }
+  } catch(e) {}
 }
 
 async function excluirDia(data) {
