@@ -426,11 +426,11 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
   <div class="search-section">
     <div class="search-card">
       <div class="search-label">Digite o número do seu bilhete</div>
-      <div class="search-row">
+      <div style="display:flex;flex-direction:column;gap:10px;">
         <input type="tel" id="numBilhete" class="num-input" maxlength="4" placeholder="0000"
           oninput="this.value=this.value.replace(/\D/g,'')"
           onkeydown="if(event.key==='Enter') buscarBilhete()"/>
-        <button class="btn-buscar" id="btnBuscar" onclick="buscarBilhete()">BUSCAR</button>
+        <button class="btn-buscar" id="btnBuscar" onclick="buscarBilhete()" style="width:100%;padding:16px;font-size:20px;">BUSCAR</button>
       </div>
       <div class="msg-erro" id="msgErro"></div>
       <div class="msg-loading" id="msgLoading"><span class="spinner"></span> Buscando bilhete...</div>
@@ -515,11 +515,11 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
   <div class="search-section">
     <div class="search-card">
       <div class="search-label">Adicionar bilhete ao lote</div>
-      <div class="search-row">
+      <div style="display:flex;flex-direction:column;gap:10px;">
         <input type="tel" id="loteInput" class="num-input" maxlength="4" placeholder="0000"
           oninput="this.value=this.value.replace(/\D/g,'')"
           onkeydown="if(event.key==='Enter') adicionarLote()"/>
-        <button class="btn-buscar" id="btnLote" onclick="adicionarLote()">+ ADD</button>
+        <button class="btn-buscar" id="btnLote" onclick="adicionarLote()" style="width:100%;padding:16px;font-size:20px;">+ ADICIONAR</button>
       </div>
       <div class="msg-erro" id="loteErro"></div>
       <div class="msg-loading" id="loteLoading"><span class="spinner"></span> Buscando...</div>
@@ -576,13 +576,13 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
   <div class="search-section">
     <div class="search-card">
       <div class="search-label">Seu WhatsApp</div>
-      <div class="search-row">
+      <div style="display:flex;flex-direction:column;gap:10px;">
         <input type="tel" id="consultaTelefone" class="num-input"
           style="font-size:18px;letter-spacing:1px;"
           placeholder="(38) 99999-9999"
           oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"
           onkeydown="if(event.key==='Enter') consultarBilhetes()"/>
-        <button class="btn-buscar" onclick="consultarBilhetes()">BUSCAR</button>
+        <button class="btn-buscar" onclick="consultarBilhetes()" style="width:100%;padding:16px;font-size:20px;">BUSCAR</button>
       </div>
       <div class="msg-erro" id="consultaErro"></div>
       <div class="msg-loading" id="consultaLoading"><span class="spinner"></span> Consultando...</div>
