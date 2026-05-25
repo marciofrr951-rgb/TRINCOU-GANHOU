@@ -564,6 +564,7 @@ function renderizarDias() {
       '<div class="dia-btns">' +
       (!d.ativo ? '<button class="btn-sm btn-sm-green" onclick="ativarDia(\'' + d.data + '\')">Ativar</button>' : '') +
       '<button class="btn-sm btn-sm-blue" onclick="verDia(\'' + d.data + '\')">Ver</button>' +
+      (!d.ativo ? '<button class="btn-sm btn-sm-red" onclick="excluirDia(\'' + d.data + '\')">Excluir</button>' : '') +
       '</div></div>';
   }).join('');
 
@@ -953,10 +954,31 @@ function renderizarCambistasAdmin() {
     btn.addEventListener('click', (function(n) {
       return function() { excluirCambista(n); };
     })(c.nome));
+    var btnEdit = document.createElement('button');
+    btnEdit.className = 'btn-sm btn-sm-blue';
+    btnEdit.textContent = 'Editar';
+    btnEdit.style.marginRight = '6px';
+    btnEdit.addEventListener('click', (function(n, p) {
+      return function() { editarCambista(n, p); };
+    })(c.nome, c.pin));
+    var btns = document.createElement('div');
+    btns.style.display = 'flex';
+    btns.style.gap = '6px';
+    btns.appendChild(btnEdit);
+    btns.appendChild(btn);
     div.appendChild(info);
-    div.appendChild(btn);
+    div.appendChild(btns);
     el.appendChild(div);
   });
+}
+
+function editarCambista(nome, pin) {
+  document.getElementById('cadNome').value = nome;
+  document.getElementById('cadPin').value = pin;
+  document.getElementById('cadNome').focus();
+  mostrarMsg('cadCambistaMsg', 'Editando ' + nome + ' — altere os dados e clique em Salvar.', 'ok');
+  // Scroll to form
+  document.getElementById('cadNome').scrollIntoView({behavior: 'smooth', block: 'center'});
 }
 
 async function salvarCambista() {
