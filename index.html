@@ -538,6 +538,12 @@
         <div class="pix-label">Valor do bilhete</div>
         <div class="pix-valor">R$ 2,50</div>
         <div style="margin-bottom:12px;">
+          <div class="input-label" style="text-align:left;color:#7a6800;margin-bottom:6px;">👥 Cambista (opcional)</div>
+          <select id="cambistaSelect" style="width:100%;padding:10px 14px;border:1.5px solid #e6d200;border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:#fffdf0;color:#3a3000;outline:none;margin-bottom:10px;">
+            <option value="">Sem cambista (compra direta)</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px;">
           <div class="input-label" style="text-align:left;color:#7a6800;margin-bottom:6px;">📱 Seu WhatsApp <span style="color:#e03131;">*obrigatório</span></div>
           <input type="tel" id="telefoneInput"
             style="width:100%;padding:10px 14px;border:1.5px solid #e6d200;border-radius:10px;font-size:15px;font-family:var(--font-sans);background:#fffdf0;color:#3a3000;outline:none;"
@@ -928,6 +934,7 @@ async function gerarPagamento() {
         valor: CONFIG.VALOR,
         descricao: `Trincou Ganhou - Bilhete ${bilhete.id}`,
         telefone: document.getElementById('telefoneInput').value.trim(),
+        cambista: document.getElementById('cambistaSelect') ? document.getElementById('cambistaSelect').value : '',
       })
     });
     const data = await resp.json();
@@ -1147,6 +1154,25 @@ async function consultarBilhetes() {
     document.getElementById('consultaLoading').style.display = 'none';
   }
 }
+
+// Carrega cambistas do Apps Script
+async function carregarCambistasSelect() {
+  try {
+    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=cambistas');
+    var cambistas = await resp.json();
+    var sel = document.getElementById('cambistaSelect');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Sem cambista (compra direta)</option>' +
+      cambistas.map(function(c) {
+        return '<option value="' + c.nome + '">' + c.nome + '</option>';
+      }).join('');
+  } catch(e) { console.error(e); }
+}
+
+// Carrega ao abrir a página
+window.addEventListener('DOMContentLoaded', function() {
+  carregarCambistasSelect();
+});
 
 function showPage(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
