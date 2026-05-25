@@ -813,7 +813,7 @@ async function gerarPagamento() {
   btn.textContent = '⏳ Gerando PIX...';
 
   try {
-    const resp = await fetch('/functions/pagamento', {
+    const resp = await fetch('/pagamento', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1236,7 +1236,7 @@ async function pagarLote() {
   const total = loteItens.length * CONFIG.VALOR;
 
   try {
-    const resp = await fetch('/functions/pagamento', {
+    const resp = await fetch('/pagamento', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
