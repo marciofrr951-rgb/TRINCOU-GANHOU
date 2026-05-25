@@ -633,7 +633,7 @@ const CONFIG = {
   SHEET_ID: '1ZeFUh5ItbA8Ie-v95MOdWvO5uMBxONEK_APLUQWpQBg',
 
   // Nome da aba com os bilhetes (padrão: primeira aba = gid 0)
-  SHEET_GID: '0',
+  SHEET_GID: '114962853',
 
   // Data do sorteio (deixe vazio se não definida)
   DATA_SORTEIO: '',
@@ -650,7 +650,7 @@ const CONFIG = {
 // BUSCA NA PLANILHA (Google Sheets público)
 // ══════════════════════════════════════════════
 async function buscarNaPlanilha(numBilhete) {
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&gid=${CONFIG.SHEET_GID}`;
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=Bilhetes`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error('Erro ao acessar a planilha');
   const text = await resp.text();
@@ -929,7 +929,7 @@ async function consultarBilhetes() {
   try {
     // Busca bilhetes e resultado do sorteio em paralelo
     const [respBilhetes, respResultado] = await Promise.all([
-      fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&gid=${CONFIG.SHEET_GID}`),
+      fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=Bilhetes`),
       fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=resultado').then(r => r.json()).catch(() => [])
     ]);
 
