@@ -7,9 +7,12 @@ export async function onRequestPost(context) {
   };
 
   try {
-    const { bilhete_id, valor, descricao, telefone } = await request.json();
+    const { bilhete_id, valor, descricao, telefone, cambista } = await request.json();
 
-    const extRef = telefone ? `${bilhete_id}|${telefone}` : bilhete_id;
+    const extRef = telefone
+      ? `${bilhete_id}|${telefone}|${cambista || ''}`
+      : bilhete_id;
+
     const siteUrl = new URL(request.url).origin;
 
     const payload = {
