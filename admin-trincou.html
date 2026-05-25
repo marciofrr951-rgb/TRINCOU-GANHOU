@@ -1133,16 +1133,20 @@ async function carregarResultados() {
     }
     el.innerHTML = lista.map(function(r) {
       var nums = r.numeros.split(',');
-      return '<div class="lista-item">' +
+      return '<div class="lista-item" style="flex-direction:column;align-items:flex-start;gap:10px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;width:100%;">' +
         '<div>' +
-        '<div style="font-weight:700;color:#0d3d0d;font-size:14px;">' + r.data.split('-').reverse().join('/') + '</div>' +
+        '<div style="font-weight:700;color:#0d3d0d;font-size:14px;">' + r.data.split('-').reverse().join('/') + (r.concurso ? ' — Concurso ' + r.concurso : '') + '</div>' +
         '<div style="font-size:11px;color:#aaa;margin-top:2px;">Publicado: ' + r.publicado + '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:6px;">' +
+        '<button class="btn-sm btn-sm-blue" onclick="editarResultado('' + r.data + '','' + r.numeros + '','' + (r.concurso||'') + '')">Editar</button>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
         nums.map(function(n) {
-          return '<div style="background:#0d3d0d;color:#f5c518;font-weight:900;font-size:14px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;">' + n + '</div>';
+          return '<div style="background:#7c3aed;color:white;font-weight:900;font-size:14px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(124,58,237,0.5);">' + n + '</div>';
         }).join('') +
-        '</div></div>';
+        '</div>' +
+        '</div>';
     }).join('');
   } catch(e) { console.error(e); }
 }
