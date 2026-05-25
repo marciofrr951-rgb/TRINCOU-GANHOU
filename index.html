@@ -944,7 +944,7 @@ async function consultarBilhetes() {
     const idxJ3     = cols.findIndex(c => c.toUpperCase().includes('JOGO_03') || c.toUpperCase() === 'JOGO03');
     const idxStatus = cols.findIndex(c => c.toUpperCase().includes('STATUS'));
     const idxTel    = cols.findIndex(c => c.toUpperCase().includes('TELEFONE'));
-    const idxDataS  = cols.findIndex(c => c.toUpperCase().includes('DATA_SORTEIO') || c.toUpperCase() === 'DATA_SORTEIO');
+    const idxDataS  = 4; // Coluna E = DATA_SORTEIO (indice fixo)
 
     const telDigitos = tel.replace(/\D/g,'');
 
