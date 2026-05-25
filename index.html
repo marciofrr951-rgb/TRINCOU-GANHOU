@@ -775,26 +775,22 @@ async function buscarNaPlanilha(numBilhete) {
   const rows = json.table.rows;
   const cols = json.table.cols.map(c => c.label);
 
-  const idxId    = cols.findIndex(c => c.toUpperCase().includes('ID') || c.toUpperCase().includes('BILHETE'));
-  const idxJ1    = cols.findIndex(c => c.toUpperCase().includes('JOGO_01') || c.toUpperCase() === 'JOGO01' || c.toUpperCase() === 'JOGO 01');
-  const idxJ2    = cols.findIndex(c => c.toUpperCase().includes('JOGO_02') || c.toUpperCase() === 'JOGO02' || c.toUpperCase() === 'JOGO 02');
-  const idxJ3    = cols.findIndex(c => c.toUpperCase().includes('JOGO_03') || c.toUpperCase() === 'JOGO03' || c.toUpperCase() === 'JOGO 03');
-  const idxStatus= cols.findIndex(c => c.toUpperCase().includes('STATUS'));
-
+  // Colunas fixas: A=ID, B=JOGO_01, C=JOGO_02, D=JOGO_03, E=DATA, F=STATUS
   const numPad = numBilhete.toString().padStart(4, '0');
 
   for (const row of rows) {
     const cells = row.c;
-    const cellId = cells[idxId];
-    if (!cellId || cellId.v === null) continue;
-    const rowId = String(cellId.v).padStart(4, '0');
+    if (!cells || !cells[0] || cells[0].v === null) continue;
+    const rowId = String(cells[0].v).padStart(4, '0');
+    // Pula a linha de cabeçalho
+    if (rowId === 'ID00') continue;
     if (rowId === numPad) {
       return {
         id: rowId,
-        jogo1: cells[idxJ1]?.v || '',
-        jogo2: cells[idxJ2]?.v || '',
-        jogo3: cells[idxJ3]?.v || '',
-        status: cells[idxStatus]?.v || 'Disponível',
+        jogo1: cells[1]?.v || '',
+        jogo2: cells[2]?.v || '',
+        jogo3: cells[3]?.v || '',
+        status: cells[5]?.v || 'Disponivel',
       };
     }
   }
