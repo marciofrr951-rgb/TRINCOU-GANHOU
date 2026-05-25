@@ -298,8 +298,9 @@ body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh
         <h3>Cadastrar cambista</h3>
         <p>Cadastre os cambistas da sua equipe. O PIN e usado para login no painel do cambista e para registrar vendas em dinheiro.</p>
         <div class="input-row">
-          <div><label>Nome</label><input type="text" id="cadNome" placeholder="Ex: Thiago Silva" style="width:200px;"/></div>
-          <div><label>PIN (so numeros)</label><input type="number" id="cadPin" placeholder="Ex: 1234" style="width:130px;"/></div>
+          <div><label>Nome</label><input type="text" id="cadNome" placeholder="Ex: Thiago Silva" style="width:180px;"/></div>
+          <div><label>Telefone/WhatsApp</label><input type="tel" id="cadTelefone" placeholder="Ex: 38999990001" style="width:170px;"/></div>
+          <div><label>PIN (so numeros)</label><input type="number" id="cadPin" placeholder="Ex: 1234" style="width:120px;"/></div>
           <button class="btn-green" onclick="salvarCambista()">Salvar</button>
         </div>
         <div class="msg-box" id="cadCambistaMsg"></div>
@@ -945,7 +946,7 @@ function renderizarCambistasAdmin() {
     nome.textContent = c.nome;
     var pin = document.createElement('div');
     pin.style.cssText = 'font-size:12px;color:#888;margin-top:2px;';
-    pin.textContent = 'PIN: ' + c.pin;
+    pin.textContent = 'PIN: ' + c.pin + (c.telefone ? ' · 📱 ' + c.telefone : '');
     info.appendChild(nome);
     info.appendChild(pin);
     var btn = document.createElement('button');
@@ -958,9 +959,9 @@ function renderizarCambistasAdmin() {
     btnEdit.className = 'btn-sm btn-sm-blue';
     btnEdit.textContent = 'Editar';
     btnEdit.style.marginRight = '6px';
-    btnEdit.addEventListener('click', (function(n, p) {
-      return function() { editarCambista(n, p); };
-    })(c.nome, c.pin));
+    btnEdit.addEventListener('click', (function(n, p, t) {
+      return function() { editarCambista(n, p, t); };
+    })(c.nome, c.pin, c.telefone || ''));
     var btns = document.createElement('div');
     btns.style.display = 'flex';
     btns.style.gap = '6px';
@@ -972,9 +973,10 @@ function renderizarCambistasAdmin() {
   });
 }
 
-function editarCambista(nome, pin) {
+function editarCambista(nome, pin, telefone) {
   document.getElementById('cadNome').value = nome;
   document.getElementById('cadPin').value = pin;
+  document.getElementById('cadTelefone').value = telefone || '';
   document.getElementById('cadNome').focus();
   mostrarMsg('cadCambistaMsg', 'Editando ' + nome + ' — altere os dados e clique em Salvar.', 'ok');
   // Scroll to form
@@ -982,18 +984,20 @@ function editarCambista(nome, pin) {
 }
 
 async function salvarCambista() {
-  var nome = document.getElementById('cadNome').value.trim();
-  var pin  = document.getElementById('cadPin').value.trim();
+  var nome     = document.getElementById('cadNome').value.trim();
+  var pin      = document.getElementById('cadPin').value.trim();
+  var telefone = document.getElementById('cadTelefone').value.trim();
   if (!nome || !pin) { mostrarMsg('cadCambistaMsg', 'Preencha nome e PIN!', 'erro'); return; }
   if (pin.length < 4) { mostrarMsg('cadCambistaMsg', 'PIN deve ter pelo menos 4 digitos!', 'erro'); return; }
   try {
-    var body = new URLSearchParams({acao: 'salvarcambista', nome: nome, pin: pin});
+    var body = new URLSearchParams({acao: 'salvarcambista', nome: nome, pin: pin, telefone: telefone});
     var resp = await fetch(SCRIPT_URL, {method: 'POST', body: body});
     var text = await resp.text();
     if (text.includes('cadastrado') || text.includes('atualizado')) {
       mostrarMsg('cadCambistaMsg', 'Cambista salvo com sucesso!', 'ok');
       document.getElementById('cadNome').value = '';
       document.getElementById('cadPin').value = '';
+      document.getElementById('cadTelefone').value = '';
       carregarCambistasAdmin();
     } else { mostrarMsg('cadCambistaMsg', text, 'erro'); }
   } catch(e) { mostrarMsg('cadCambistaMsg', 'Erro: ' + e.message, 'erro'); }
