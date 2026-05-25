@@ -135,7 +135,7 @@ body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh
     <button class="tab" onclick="setTab('gerador',this)">Gerar</button>
     <button class="tab" onclick="setTab('acertos',this)">Acertos</button>
     <button class="tab" onclick="setTab('sorteio',this)">Sorteio</button>
-    <button class="tab" onclick="setTab('cambistas-admin',this)">Equipe</button>
+    <button class="tab" onclick="setTab('equipe',this)">Equipe</button>
   </div>
 
   <div id="loadingDash" class="loading"><span class="spinner"></span> Carregando...</div>
@@ -288,6 +288,24 @@ body { font-family: 'Nunito', sans-serif; background: #0d3d0d; min-height: 100vh
 
       <div class="section-title">Resultados publicados</div>
       <div class="lista-wrap" id="listaResultados">
+        <div style="padding:16px;font-size:13px;color:#888;text-align:center;">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- EQUIPE -->
+    <div class="tab-content" id="tab-equipe">
+      <div class="white-card">
+        <h3>Cadastrar cambista</h3>
+        <p>Cadastre os cambistas da sua equipe. O PIN e usado para login no painel do cambista e para registrar vendas em dinheiro.</p>
+        <div class="input-row">
+          <div><label>Nome</label><input type="text" id="cadNome" placeholder="Ex: Thiago Silva" style="width:200px;"/></div>
+          <div><label>PIN (so numeros)</label><input type="number" id="cadPin" placeholder="Ex: 1234" style="width:130px;"/></div>
+          <button class="btn-green" onclick="salvarCambista()">Salvar</button>
+        </div>
+        <div class="msg-box" id="cadCambistaMsg"></div>
+      </div>
+      <div class="section-title">Cambistas cadastrados</div>
+      <div class="lista-wrap" id="listaCambistasAdmin">
         <div style="padding:16px;font-size:13px;color:#888;text-align:center;">Carregando...</div>
       </div>
     </div>
