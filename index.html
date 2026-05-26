@@ -1343,11 +1343,90 @@ function gerarImagemBilhetes() {
   ctx.textAlign = 'center';
   ctx.fillText('Gerado em ' + new Date().toLocaleString('pt-BR'), W/2, H - 12);
 
-  // Download
+  // Mostra modal com prévia
+  var imgData = canvas.toDataURL('image/png');
+  mostrarModalCompartilhar(imgData);
+}
+
+function mostrarModalCompartilhar(imgData) {
+  // Remove modal anterior se existir
+  var modalAnt = document.getElementById('modalCompartilhar');
+  if (modalAnt) modalAnt.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modalCompartilhar';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;';
+
+  modal.innerHTML =
+    '<div style="width:100%;max-width:400px;margin:0 auto;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+    '<span style="font-family:Nunito,sans-serif;font-weight:900;font-size:18px;color:white;">📲 Compartilhar bilhetes</span>' +
+    '<button onclick="document.getElementById('modalCompartilhar').remove()" style="background:rgba(255,255,255,0.1);border:none;color:white;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;">✕</button>' +
+    '</div>' +
+
+    '<div style="background:#111;border-radius:14px;overflow:hidden;margin-bottom:16px;border:1px solid rgba(74,222,74,0.2);">' +
+    '<img src="' + imgData + '" style="width:100%;display:block;"/>' +
+    '</div>' +
+
+    '<div style="display:flex;flex-direction:column;gap:10px;">' +
+
+    // WhatsApp
+    '<button onclick="compartilharWhatsApp('' + imgData + '')" style="display:flex;align-items:center;gap:12px;background:#25D366;color:white;border:none;border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;">' +
+    '<span style="font-size:22px;">💬</span> Compartilhar no WhatsApp</button>' +
+
+    // Salvar
+    '<button onclick="salvarImagem('' + imgData + '')" style="display:flex;align-items:center;gap:12px;background:rgba(74,222,74,0.15);color:#4ade4a;border:1px solid rgba(74,222,74,0.4);border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;">' +
+    '<span style="font-size:22px;">💾</span> Salvar imagem</button>' +
+
+    // Compartilhar nativo (se disponivel)
+    (navigator.share ? '<button onclick="compartilharNativo('' + imgData + '')" style="display:flex;align-items:center;gap:12px;background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;">' +
+    '<span style="font-size:22px;">📤</span> Mais opções de compartilhamento</button>' : '') +
+
+    '</div></div>';
+
+  document.body.appendChild(modal);
+
+  // Fecha ao clicar fora
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+function compartilharWhatsApp(imgData) {
+  // Copia imagem para clipboard e abre WhatsApp
+  fetch(imgData)
+    .then(function(res){ return res.blob(); })
+    .then(function(blob) {
+      if (navigator.clipboard && navigator.clipboard.write) {
+        navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+          .then(function() {
+            window.open('https://wa.me/?text=Meus%20bilhetes%20Trincou%20Ganhou%20%F0%9F%8D%80%20(imagem%20copiada%20-%20cole%20aqui)', '_blank');
+          })
+          .catch(function() {
+            salvarImagem(imgData);
+            setTimeout(function(){ window.open('https://wa.me/', '_blank'); }, 500);
+          });
+      } else {
+        salvarImagem(imgData);
+        setTimeout(function(){ window.open('https://wa.me/', '_blank'); }, 500);
+      }
+    });
+}
+
+function salvarImagem(imgData) {
   var link = document.createElement('a');
   link.download = 'trincou-ganhou-bilhetes.png';
-  link.href = canvas.toDataURL('image/png');
+  link.href = imgData;
   link.click();
+}
+
+async function compartilharNativo(imgData) {
+  try {
+    var res = await fetch(imgData);
+    var blob = await res.blob();
+    var file = new File([blob], 'trincou-ganhou.png', {type: 'image/png'});
+    await navigator.share({ files: [file], title: 'Trincou Ganhou', text: 'Meus bilhetes 🍀' });
+  } catch(e) { console.error(e); }
 }
 
 function roundRect(ctx, x, y, w, h, r) {
