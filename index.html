@@ -1348,48 +1348,75 @@ function gerarImagemBilhetes() {
   mostrarModalCompartilhar(imgData);
 }
 
+function fecharModalCompartilhar() {
+  var m = document.getElementById('modalCompartilhar');
+  if (m) m.remove();
+}
+
 function mostrarModalCompartilhar(imgData) {
-  // Remove modal anterior se existir
-  var modalAnt = document.getElementById('modalCompartilhar');
-  if (modalAnt) modalAnt.remove();
+  fecharModalCompartilhar();
+  window._imgDataAtual = imgData;
 
   var modal = document.createElement('div');
   modal.id = 'modalCompartilhar';
   modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;';
 
-  modal.innerHTML =
-    '<div style="width:100%;max-width:400px;margin:0 auto;">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
-    '<span style="font-family:Nunito,sans-serif;font-weight:900;font-size:18px;color:white;">📲 Compartilhar bilhetes</span>' +
-    '<button onclick="document.getElementById('modalCompartilhar').remove()" style="background:rgba(255,255,255,0.1);border:none;color:white;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;">✕</button>' +
-    '</div>' +
+  // Wrapper
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'width:100%;max-width:400px;margin:0 auto;';
 
-    '<div style="background:#111;border-radius:14px;overflow:hidden;margin-bottom:16px;border:1px solid rgba(74,222,74,0.2);">' +
-    '<img src="' + imgData + '" style="width:100%;display:block;"/>' +
-    '</div>' +
+  // Topo
+  var topo = document.createElement('div');
+  topo.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;';
+  topo.innerHTML = '<span style="font-family:Nunito,sans-serif;font-weight:900;font-size:18px;color:white;">Compartilhar bilhetes</span>';
+  var btnFechar = document.createElement('button');
+  btnFechar.textContent = 'X';
+  btnFechar.style.cssText = 'background:rgba(255,255,255,0.1);border:none;color:white;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;';
+  btnFechar.onclick = fecharModalCompartilhar;
+  topo.appendChild(btnFechar);
+  wrap.appendChild(topo);
 
-    '<div style="display:flex;flex-direction:column;gap:10px;">' +
+  // Preview imagem
+  var imgWrap = document.createElement('div');
+  imgWrap.style.cssText = 'background:#111;border-radius:14px;overflow:hidden;margin-bottom:16px;border:1px solid rgba(74,222,74,0.2);';
+  var img = document.createElement('img');
+  img.src = imgData;
+  img.style.cssText = 'width:100%;display:block;';
+  imgWrap.appendChild(img);
+  wrap.appendChild(imgWrap);
 
-    // WhatsApp
-    '<button onclick="compartilharWhatsApp('' + imgData + '')" style="display:flex;align-items:center;gap:12px;background:#25D366;color:white;border:none;border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;">' +
-    '<span style="font-size:22px;">💬</span> Compartilhar no WhatsApp</button>' +
+  // Botoes
+  var btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
 
-    // Salvar
-    '<button onclick="salvarImagem('' + imgData + '')" style="display:flex;align-items:center;gap:12px;background:rgba(74,222,74,0.15);color:#4ade4a;border:1px solid rgba(74,222,74,0.4);border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;">' +
-    '<span style="font-size:22px;">💾</span> Salvar imagem</button>' +
+  // WhatsApp
+  var btnWA = document.createElement('button');
+  btnWA.style.cssText = 'display:flex;align-items:center;gap:12px;background:#25D366;color:white;border:none;border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;';
+  btnWA.innerHTML = '<span style="font-size:22px;">💬</span> Compartilhar no WhatsApp';
+  btnWA.onclick = function(){ compartilharWhatsApp(window._imgDataAtual); };
+  btns.appendChild(btnWA);
 
-    // Compartilhar nativo (se disponivel)
-    (navigator.share ? '<button onclick="compartilharNativo('' + imgData + '')" style="display:flex;align-items:center;gap:12px;background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;">' +
-    '<span style="font-size:22px;">📤</span> Mais opções de compartilhamento</button>' : '') +
+  // Salvar
+  var btnSalvar = document.createElement('button');
+  btnSalvar.style.cssText = 'display:flex;align-items:center;gap:12px;background:rgba(74,222,74,0.15);color:#4ade4a;border:1px solid rgba(74,222,74,0.4);border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;';
+  btnSalvar.innerHTML = '<span style="font-size:22px;">💾</span> Salvar imagem';
+  btnSalvar.onclick = function(){ salvarImagem(window._imgDataAtual); };
+  btns.appendChild(btnSalvar);
 
-    '</div></div>';
+  // Nativo
+  if (navigator.share) {
+    var btnNativo = document.createElement('button');
+    btnNativo.style.cssText = 'display:flex;align-items:center;gap:12px;background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:14px 18px;font-family:Nunito,sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;';
+    btnNativo.innerHTML = '<span style="font-size:22px;">📤</span> Mais opcoes de compartilhamento';
+    btnNativo.onclick = function(){ compartilharNativo(window._imgDataAtual); };
+    btns.appendChild(btnNativo);
+  }
 
+  wrap.appendChild(btns);
+  modal.appendChild(wrap);
   document.body.appendChild(modal);
 
-  // Fecha ao clicar fora
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) modal.remove();
-  });
+  modal.addEventListener('click', function(e){ if (e.target === modal) fecharModalCompartilhar(); });
 }
 
 function compartilharWhatsApp(imgData) {
