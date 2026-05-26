@@ -938,12 +938,13 @@ async function consultarBilhetes() {
     const rows = json.table.rows;
     const cols = json.table.cols.map(c => c.label);
 
-    const idxId     = cols.findIndex(c => c.toUpperCase().includes('ID') || c.toUpperCase().includes('BILHETE'));
-    const idxJ1     = cols.findIndex(c => c.toUpperCase().includes('JOGO_01') || c.toUpperCase() === 'JOGO01');
-    const idxJ2     = cols.findIndex(c => c.toUpperCase().includes('JOGO_02') || c.toUpperCase() === 'JOGO02');
-    const idxJ3     = cols.findIndex(c => c.toUpperCase().includes('JOGO_03') || c.toUpperCase() === 'JOGO03');
-    const idxStatus = cols.findIndex(c => c.toUpperCase().includes('STATUS'));
-    const idxTel    = cols.findIndex(c => c.toUpperCase().includes('TELEFONE'));
+    const idxId       = 0;
+    const idxJ1       = 1;
+    const idxJ2       = 2;
+    const idxJ3       = 3;
+    const idxStatus   = 5;
+    const idxTel      = 6;
+    const idxCambista = 7;
     const idxDataS  = 4; // Coluna E = DATA_SORTEIO (indice fixo)
 
     const telDigitos = tel.replace(/\D/g,'');
@@ -1047,6 +1048,8 @@ async function consultarBilhetes() {
           }
 
           // Guarda dados do bilhete para geração de imagem
+          var telefoneVal = idxTel >= 0 ? String(cells[idxTel]?.v || '') : '';
+          var cambistaVal = idxCambista >= 0 ? String(cells[idxCambista]?.v || '') : '';
           window._bilhetesEncontrados.push({
             id: id, j1: j1, j2: j2, j3: j3,
             dataSorteio: dataFormatada,
@@ -1054,7 +1057,9 @@ async function consultarBilhetes() {
             premio: infoResultado.premio || '250',
             sorteados: sorteados,
             g1: g1, g2: g2, g3: g3, ganhou: ganhou,
-            status: status
+            status: status,
+            telefone: telefoneVal,
+            cambista: cambistaVal,
           });
 
           return '<div style="background:rgba(10,30,10,0.9);border:1px solid ' + (ganhou ? 'rgba(74,222,74,0.4)' : temResultado ? 'rgba(224,49,49,0.3)' : 'rgba(245,197,24,0.2)') + ';border-radius:14px;padding:16px;margin-bottom:14px;">' +
@@ -1264,17 +1269,21 @@ function gerarImagemBilhetes() {
     ctx.fillText('Data: ' + dataHoje, pad + 8, iy);
     ctx.fillText('Horario: ' + horaAgora, pad + 8, iy + 18);
     if (b.cambista) ctx.fillText('Colaborador: ' + b.cambista, pad + 8, iy + 36);
+    if (b.telefone) ctx.fillText('Cliente: ' + b.telefone, pad + 8, iy + (b.cambista ? 54 : 36));
 
-    dashedLine(ctx, pad, y + 168, pad + cW, y + 168, '#aaa', 4, 6);
+    dashedLine(ctx, pad, y + 184, pad + cW, y + 184, '#aaa', 4, 6);
 
-    // ── CONCURSO ──
-    var cy = y + 186;
+    // ── BILHETE + CONCURSO ──
+    var cy = y + 202;
     ctx.font = 'bold 13px Arial';
     ctx.fillStyle = '#1a1a1a';
-    if (b.concurso) ctx.fillText('Concurso:  ' + b.concurso, pad + 8, cy);
+    ctx.textAlign = 'left';
+    ctx.fillText('Bilhete: #' + b.id, pad + 8, cy);
+    if (b.concurso) { ctx.textAlign = 'right'; ctx.fillText('Concurso: ' + b.concurso, pad + cW - 4, cy); }
+    ctx.textAlign = 'left';
     if (b.dataSorteio) ctx.fillText('Data do sorteio:  ' + b.dataSorteio, pad + 8, cy + 20);
 
-    dashedLine(ctx, pad, y + 218, pad + cW, y + 218, '#aaa', 4, 6);
+    dashedLine(ctx, pad, y + 234, pad + cW, y + 234, '#aaa', 4, 6);
 
     // ── JOGOS ──
     var jogos = [
@@ -1284,7 +1293,7 @@ function gerarImagemBilhetes() {
     ];
 
     jogos.forEach(function(jogo, ji) {
-      var jy = y + 236 + ji * 34;
+      var jy = y + 252 + ji * 34;
       var numTxt = jogo.nums.join(' - ');
 
       // Label verde
@@ -1316,7 +1325,7 @@ function gerarImagemBilhetes() {
 
     // ── SORTEADOS (se tiver resultado) ──
     if (b.sorteados) {
-      var sy = y + 342;
+      var sy = y + 358;
       ctx.font = '11px Arial';
       ctx.fillStyle = '#666';
       ctx.textAlign = 'left';
@@ -1335,7 +1344,7 @@ function gerarImagemBilhetes() {
     }
 
     // ── TOTAL / PREMIO ──
-    var ty = y + 370;
+    var ty = y + 386;
     ctx.font = '13px Arial';
     ctx.fillStyle = '#333';
     ctx.textAlign = 'left';
@@ -1354,24 +1363,13 @@ function gerarImagemBilhetes() {
 
     dashedLine(ctx, pad, ty + 30, pad + cW, ty + 30, '#aaa', 4, 6);
 
-    // ── NUMERO BILHETE ──
-    ctx.font = '12px Arial';
-    ctx.fillStyle = '#555';
-    ctx.textAlign = 'center';
-    ctx.fillText('BILHETE', W/2, ty + 48);
-
-    ctx.font = 'bold 36px Arial';
-    ctx.fillStyle = '#1a1a1a';
-    ctx.textAlign = 'center';
-    ctx.fillText('#' + b.id, W/2, ty + 82);
-
     // Banner GANHOU no bilhete inteiro
+    dashedLine(ctx, pad, ty + 32, pad + cW, ty + 32, '#aaa', 4, 6);
     if (b.ganhou) {
-      dashedLine(ctx, pad, ty + 90, pad + cW, ty + 90, '#1a7a1a', 4, 6);
-      ctx.font = 'bold 16px Arial';
+      ctx.font = 'bold 15px Arial';
       ctx.fillStyle = '#1a7a1a';
       ctx.textAlign = 'center';
-      ctx.fillText('🏆 PARABENS! VOCE GANHOU!', W/2, ty + 112);
+      ctx.fillText('🏆 PARABENS! VOCE GANHOU!', W/2, ty + 52);
     }
 
     // ── RODAPE ──
