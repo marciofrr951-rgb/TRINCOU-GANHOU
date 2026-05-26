@@ -1058,10 +1058,10 @@ async function consultarBilhetes() {
     // Monta mapa de resultados por data
     const resultados = Array.isArray(respResultado) ? respResultado : [];
     const mapaResultados = {};
-    const mapaConcursos = {};
+    window.mapaConcursos = {};
     resultados.forEach(r => {
       mapaResultados[r.data] = r.numeros.split(',').map(n => parseInt(n));
-      mapaConcursos[r.data] = { concurso: r.concurso || '', data: r.data, premio: r.premio || '250' };
+      window.mapaConcursos[r.data] = { concurso: r.concurso || '', data: r.data, premio: r.premio || '250' };
     });
 
     function verificarJogo(jogo, sorteados) {
@@ -1685,7 +1685,7 @@ async function carregarHistorico() {
       html += '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;">📅 ' + dataFmt + ' — ' + porDia[dia].length + ' bilhete(s)</div>';
 
       porDia[dia].forEach(function(b) {
-        var infoR = mapaConcursos ? (mapaConcursos[b.dataSorteio] || {}) : {};
+        var infoR = (window.mapaConcursos && window.mapaConcursos[b.dataSorteio]) ? window.mapaConcursos[b.dataSorteio] : {};
         html += '<div style="background:rgba(10,30,10,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:10px;">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
           '<span style="font-weight:900;font-size:15px;color:white;">BILHETE #' + b.id + '</span>' +
