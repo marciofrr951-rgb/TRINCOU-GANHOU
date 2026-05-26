@@ -585,8 +585,17 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
       </div>
       <div class="msg-erro" id="consultaErro"></div>
       <div class="msg-loading" id="consultaLoading"><span class="spinner"></span> Consultando...</div>
-      <div id="consultaResultado" style="display:none;margin-top:16px;">
+      <div id="consultaResultado" style="display:none;margin-top:20px;">
+        <div style="display:flex;gap:4px;background:rgba(0,0,0,0.3);border-radius:12px;padding:4px;margin-bottom:16px;">
+          <button id="tabAberto" onclick="setAbaConsulta('aberto')" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(74,222,74,0.3);background:rgba(74,222,74,0.15);color:#4ade4a;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+            🎟️ Em aberto
+          </button>
+          <button id="tabHistorico" onclick="setAbaConsulta('historico')" style="flex:1;padding:10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+            📅 Histórico
+          </button>
+        </div>
         <div id="consultaLista"></div>
+        <div id="consultaHistoricoLista" style="display:none;"></div>
       </div>
     </div>
   </div>
