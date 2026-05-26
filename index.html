@@ -1044,6 +1044,7 @@ async function consultarBilhetes() {
     const idxStatus   = 5;
     const idxTel      = 6;
     const idxCambista = 7;
+    const idxDataPag  = 8;
     const idxDataS  = 4; // Coluna E = DATA_SORTEIO (indice fixo)
 
     const telDigitos = tel.replace(/\D/g,'');
@@ -1059,6 +1060,7 @@ async function consultarBilhetes() {
     const resultados = Array.isArray(respResultado) ? respResultado : [];
     const mapaResultados = {};
     window.mapaConcursos = {};
+    window.mapaResultados = mapaResultados;
     resultados.forEach(r => {
       mapaResultados[r.data] = r.numeros.split(',').map(n => parseInt(n));
       window.mapaConcursos[r.data] = { concurso: r.concurso || '', data: r.data, premio: r.premio || '250' };
@@ -1147,8 +1149,21 @@ async function consultarBilhetes() {
           }
 
           // Guarda dados do bilhete para geração de imagem
-          var telefoneVal = idxTel >= 0 ? String(cells[idxTel]?.v || '') : '';
-          var cambistaVal = idxCambista >= 0 ? String(cells[idxCambista]?.v || '') : '';
+          var telefoneVal = String(cells[idxTel]?.v || '');
+          var cambistaVal = String(cells[idxCambista]?.v || '');
+          var dataPagVal  = cells[idxDataPag]?.v || '';
+          // Formata data de pagamento
+          var dataPagFmt = '';
+          if (dataPagVal) {
+            try {
+              var dp = new Date(dataPagVal);
+              if (!isNaN(dp)) {
+                dataPagFmt = dp.toLocaleDateString('pt-BR') + ' ' + dp.toLocaleTimeString('pt-BR');
+              } else {
+                dataPagFmt = String(dataPagVal);
+              }
+            } catch(e) { dataPagFmt = String(dataPagVal); }
+          }
           window._bilhetesEncontrados.push({
             id: id, j1: j1, j2: j2, j3: j3,
             dataSorteio: dataFormatada,
@@ -1159,6 +1174,7 @@ async function consultarBilhetes() {
             status: status,
             telefone: telefoneVal,
             cambista: cambistaVal,
+            dataPag: dataPagFmt,
           });
 
           return '<div style="background:rgba(10,30,10,0.9);border:1px solid ' + (ganhou ? 'rgba(74,222,74,0.4)' : temResultado ? 'rgba(224,49,49,0.3)' : 'rgba(245,197,24,0.2)') + ';border-radius:14px;padding:16px;margin-bottom:14px;">' +
@@ -1312,11 +1328,19 @@ function gerarImagemBilhetes() {
   ctx.fillStyle = '#d4cfbf';
   ctx.fillRect(0, 0, W, H);
 
-  var agora = new Date();
-  var dataHoje = agora.toLocaleDateString('pt-BR');
-  var horaAgora = agora.toLocaleTimeString('pt-BR');
-
   bilhetes.forEach(function(b, idx) {
+    // Usa data/hora do pagamento se disponivel
+    var dataHoje, horaAgora;
+    if (b.dataPag && b.dataPag.includes('/')) {
+      var partes = b.dataPag.split(' ');
+      dataHoje = partes[0] || new Date().toLocaleDateString('pt-BR');
+      horaAgora = partes[1] || new Date().toLocaleTimeString('pt-BR');
+    } else {
+      var agora = new Date();
+      dataHoje = agora.toLocaleDateString('pt-BR');
+      horaAgora = agora.toLocaleTimeString('pt-BR');
+    }
+
     var y = gap + idx * (recH + gap);
     var pad = 24;
     var cW = W - pad * 2;
@@ -1694,11 +1718,32 @@ async function carregarHistorico() {
 
         if (infoR.concurso) html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;">🎯 Concurso ' + infoR.concurso + ' · 📅 ' + dataFmt + '</div>';
 
+        // Verifica resultado para este dia
+        var sorteadosDia = window.mapaResultados ? (window.mapaResultados[b.dataSorteio] || null) : null;
+
+        // Sorteados
+        if (sorteadosDia) {
+          html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;">' +
+            '<span style="font-size:10px;color:rgba(255,255,255,0.4);">Sorteados:</span>' +
+            sorteadosDia.map(function(n){
+              return '<div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;font-weight:900;font-size:11px;width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(124,58,237,0.4);">' + String(n).padStart(2,'0') + '</div>';
+            }).join('') + '</div>';
+        }
+
         [['J01', b.jogo1], ['J02', b.jogo2], ['J03', b.jogo3]].forEach(function(j) {
           if (!j[1]) return;
-          html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.2);border-radius:8px;padding:6px 10px;margin-bottom:4px;">' +
-            '<span style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.3);min-width:30px;">' + j[0] + '</span>' +
-            j[1].split('-').map(function(n){ return '<span style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);font-weight:700;font-size:13px;width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;">' + n + '</span>'; }).join('') +
+          var nums = j[1].split('-');
+          var acertados = sorteadosDia ? nums.filter(function(n){ return sorteadosDia.includes(parseInt(n)); }).length : 0;
+          var ganhouJogo = sorteadosDia ? acertados >= 3 : null;
+          var bg = ganhouJogo === true ? 'rgba(74,222,74,0.08)' : 'rgba(0,0,0,0.2)';
+          var border = ganhouJogo === true ? '1px solid rgba(74,222,74,0.3)' : '1px solid rgba(255,255,255,0.06)';
+          html += '<div style="display:flex;align-items:center;gap:8px;background:' + bg + ';border:' + border + ';border-radius:8px;padding:6px 10px;margin-bottom:4px;">' +
+            '<span style="font-size:10px;font-weight:900;color:' + (ganhouJogo ? '#4ade4a' : 'rgba(255,255,255,0.3)') + ';min-width:30px;">' + j[0] + '</span>' +
+            nums.map(function(n){
+              var acertou = sorteadosDia && sorteadosDia.includes(parseInt(n));
+              return '<span style="background:' + (acertou ? '#f5c518' : 'rgba(255,255,255,0.07)') + ';color:' + (acertou ? '#0a1a0a' : 'rgba(255,255,255,0.8)') + ';font-weight:700;font-size:13px;width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;">' + n + '</span>';
+            }).join('') +
+            (sorteadosDia !== null ? '<span style="margin-left:auto;font-size:10px;font-weight:900;color:' + (ganhouJogo ? '#4ade4a' : '#ff6b6b') + ';">' + (ganhouJogo ? '✓ GANHOU' : '✗ PERDEU') + '</span>' : '') +
             '</div>';
         });
         html += '</div>';
