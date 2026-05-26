@@ -972,6 +972,8 @@ async function consultarBilhetes() {
     }
 
     const lista = document.getElementById('consultaLista');
+    // Guarda dados para gerar imagem
+    window._bilhetesEncontrados = [];
 
     if (encontrados.length === 0) {
       lista.innerHTML = '<div style="text-align:center;padding:30px;color:#888;"><span style="font-size:40px;display:block;margin-bottom:12px;">🔍</span>Nenhum bilhete pago encontrado para este número.</div>';
@@ -1044,9 +1046,22 @@ async function consultarBilhetes() {
               '</div>';
           }
 
+          // Guarda dados do bilhete para geração de imagem
+          window._bilhetesEncontrados.push({
+            id: id, j1: j1, j2: j2, j3: j3,
+            dataSorteio: dataFormatada,
+            concurso: infoResultado.concurso || '',
+            sorteados: sorteados,
+            g1: g1, g2: g2, g3: g3, ganhou: ganhou,
+            status: status
+          });
+
           return '<div style="background:rgba(10,30,10,0.9);border:1px solid ' + (ganhou ? 'rgba(74,222,74,0.4)' : temResultado ? 'rgba(224,49,49,0.3)' : 'rgba(245,197,24,0.2)') + ';border-radius:14px;padding:16px;margin-bottom:14px;">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<input type="checkbox" id="chk-' + id + '" value="' + id + '" style="width:18px;height:18px;accent-color:#4ade4a;cursor:pointer;"/>' +
             '<span style="font-weight:900;font-size:16px;color:white;font-family:Bebas Neue,sans-serif;letter-spacing:2px;">BILHETE #' + id + '</span>' +
+            '</div>' +
             badgeTop + '</div>' +
             sorteadosHtml +
             jogoHtml('J01', j1, g1) +
@@ -1059,6 +1074,14 @@ async function consultarBilhetes() {
       if (totalGanhadores.length > 0) {
         lista.innerHTML = '<div style="background:linear-gradient(135deg,#f5c518,#c9960a);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;"><div style="font-size:28px;margin-bottom:4px;">🏆</div><div style="font-weight:900;font-size:18px;color:#0d3d0d;">PARABENS! Voce ganhou!</div><div style="font-size:13px;color:#5a3800;margin-top:4px;">Bilhete(s) vencedor(es): #' + totalGanhadores.join(', #') + '</div></div>' + lista.innerHTML;
       }
+
+      // Botão gerar imagem
+      lista.innerHTML += '<div style="margin-top:16px;">' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:8px;text-align:center;">Selecione os bilhetes e gere sua imagem</div>' +
+        '<div style="display:flex;gap:8px;">' +
+        '<button onclick="selecionarTodos()" style="flex:1;background:rgba(74,222,74,0.1);color:#4ade4a;border:1px solid rgba(74,222,74,0.3);border-radius:10px;padding:10px;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">☑ Selecionar todos</button>' +
+        '<button onclick="gerarImagemBilhetes()" style="flex:2;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;border:none;border-radius:10px;padding:10px;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">📸 Gerar imagem</button>' +
+        '</div></div>';
     }
 
     document.getElementById('consultaResultado').style.display = 'block';
@@ -1148,6 +1171,197 @@ async function registrarLoteDinheiro() {
   }
   msg.style.color = '#4ade4a';
   msg.textContent = sucesso + ' bilhete(s) registrados como PAGO EM DINHEIRO!';
+}
+
+function selecionarTodos() {
+  var checks = document.querySelectorAll('[id^="chk-"]');
+  var todosChecked = Array.from(checks).every(function(c){ return c.checked; });
+  checks.forEach(function(c){ c.checked = !todosChecked; });
+}
+
+function gerarImagemBilhetes() {
+  var checks = document.querySelectorAll('[id^="chk-"]:checked');
+  if (checks.length === 0) { alert('Selecione pelo menos um bilhete!'); return; }
+
+  var ids = Array.from(checks).map(function(c){ return c.value; });
+  var bilhetes = (window._bilhetesEncontrados || []).filter(function(b){ return ids.includes(b.id); });
+  if (bilhetes.length === 0) return;
+
+  // Canvas
+  var W = 600;
+  var headerH = 120;
+  var bilheteH = 200;
+  var paddingH = 20;
+  var H = headerH + (bilhetes.length * (bilheteH + paddingH)) + 40;
+
+  var canvas = document.createElement('canvas');
+  canvas.width = W * 2; // retina
+  canvas.height = H * 2;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  var ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  // Fundo
+  ctx.fillStyle = '#0a1a0a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Header
+  ctx.fillStyle = '#0d2a0d';
+  ctx.fillRect(0, 0, W, headerH);
+  ctx.strokeStyle = 'rgba(74,222,74,0.3)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0, 0, W, headerH);
+
+  // Trevo
+  ctx.font = 'bold 32px Arial';
+  ctx.fillStyle = '#4ade4a';
+  ctx.textAlign = 'center';
+  ctx.fillText('🍀', W/2, 38);
+
+  // Nome
+  ctx.font = 'bold 22px Arial';
+  ctx.fillStyle = 'white';
+  ctx.fillText('TRINCOU', W/2, 62);
+  ctx.fillStyle = '#4ade4a';
+  ctx.fillText('GANHOU', W/2, 84);
+
+  ctx.font = '11px Arial';
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.fillText('trincouganhou.com.br', W/2, 104);
+
+  // Bilhetes
+  bilhetes.forEach(function(b, idx) {
+    var y = headerH + paddingH + idx * (bilheteH + paddingH);
+    var pad = 16;
+
+    // Card bg
+    ctx.fillStyle = 'rgba(15,35,15,0.95)';
+    roundRect(ctx, pad, y, W - pad*2, bilheteH, 12);
+    ctx.fill();
+    ctx.strokeStyle = b.ganhou ? 'rgba(74,222,74,0.5)' : b.sorteados ? 'rgba(224,49,49,0.3)' : 'rgba(245,197,24,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Bilhete numero
+    ctx.font = 'bold 18px Arial';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'left';
+    ctx.fillText('BILHETE #' + b.id, pad + 14, y + 26);
+
+    // Status badge
+    if (b.ganhou) {
+      ctx.fillStyle = 'rgba(74,222,74,0.2)';
+      roundRect(ctx, W - 110, y + 10, 94, 22, 11);
+      ctx.fill();
+      ctx.font = 'bold 11px Arial';
+      ctx.fillStyle = '#4ade4a';
+      ctx.textAlign = 'center';
+      ctx.fillText('🏆 GANHOU!', W - 63, y + 25);
+    }
+
+    // Info concurso e data
+    ctx.font = '11px Arial';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.textAlign = 'left';
+    var infoTxt = '';
+    if (b.concurso) infoTxt += 'Concurso ' + b.concurso + '  ·  ';
+    if (b.dataSorteio) infoTxt += b.dataSorteio;
+    ctx.fillText(infoTxt, pad + 14, y + 44);
+
+    // Sorteados
+    if (b.sorteados) {
+      ctx.font = '10px Arial';
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fillText('Sorteados:', pad + 14, y + 62);
+      b.sorteados.forEach(function(n, ni) {
+        var bx = pad + 80 + ni * 38;
+        var by = y + 52;
+        ctx.fillStyle = '#7c3aed';
+        ctx.beginPath();
+        ctx.arc(bx + 14, by + 8, 14, 0, Math.PI*2);
+        ctx.fill();
+        ctx.font = 'bold 12px Arial';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(n).padStart(2,'0'), bx + 14, by + 13);
+      });
+    }
+
+    // Jogos
+    var jogos = [
+      {label:'J01', nums: b.j1 ? b.j1.split('-') : [], ganhou: b.g1},
+      {label:'J02', nums: b.j2 ? b.j2.split('-') : [], ganhou: b.g2},
+      {label:'J03', nums: b.j3 ? b.j3.split('-') : [], ganhou: b.g3},
+    ];
+    jogos.forEach(function(jogo, ji) {
+      var jy = y + 78 + ji * 36;
+      var jx = pad + 14;
+
+      // Fundo jogo
+      ctx.fillStyle = jogo.ganhou ? 'rgba(74,222,74,0.08)' : 'rgba(0,0,0,0.3)';
+      roundRect(ctx, jx, jy, W - pad*2 - 28, 30, 8);
+      ctx.fill();
+      ctx.strokeStyle = jogo.ganhou ? 'rgba(74,222,74,0.4)' : 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Label
+      ctx.font = 'bold 10px Arial';
+      ctx.fillStyle = jogo.ganhou ? '#4ade4a' : 'rgba(255,255,255,0.4)';
+      ctx.textAlign = 'left';
+      ctx.fillText(jogo.label, jx + 8, jy + 19);
+
+      // Numeros
+      jogo.nums.forEach(function(n, ni) {
+        var nx = jx + 48 + ni * 40;
+        var ny = jy + 4;
+        var acertou = b.sorteados && b.sorteados.includes(parseInt(n));
+        ctx.fillStyle = acertou ? '#f5c518' : 'rgba(255,255,255,0.08)';
+        roundRect(ctx, nx, ny, 32, 22, 6);
+        ctx.fill();
+        ctx.font = 'bold 12px Arial';
+        ctx.fillStyle = acertou ? '#0a1a0a' : 'rgba(255,255,255,0.8)';
+        ctx.textAlign = 'center';
+        ctx.fillText(n, nx + 16, ny + 15);
+      });
+
+      // Badge ganhou/perdeu
+      if (b.sorteados) {
+        var badgeTxt = jogo.ganhou ? '✓ GANHOU' : '✗ PERDEU';
+        ctx.font = 'bold 10px Arial';
+        ctx.fillStyle = jogo.ganhou ? '#4ade4a' : '#ff6b6b';
+        ctx.textAlign = 'right';
+        ctx.fillText(badgeTxt, W - pad - 28 + 14 - 8, jy + 19);
+      }
+    });
+  });
+
+  // Rodape
+  ctx.font = '10px Arial';
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.textAlign = 'center';
+  ctx.fillText('Gerado em ' + new Date().toLocaleString('pt-BR'), W/2, H - 12);
+
+  // Download
+  var link = document.createElement('a');
+  link.download = 'trincou-ganhou-bilhetes.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 function showPage(page, btn) {
