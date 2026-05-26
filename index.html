@@ -1182,6 +1182,10 @@ async function consultarBilhetes() {
     }
 
     document.getElementById('consultaResultado').style.display = 'block';
+    // Reset historico
+    var histLista = document.getElementById('consultaHistoricoLista');
+    if (histLista) { histLista.innerHTML = ''; histLista.dataset.loaded = '0'; histLista.style.display = 'none'; }
+    setAbaConsulta('aberto');
   } catch(e) {
     erroEl.textContent = '⚠️ Erro ao consultar. Tente novamente.';
     erroEl.style.display = 'block';
@@ -1617,6 +1621,92 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
+}
+
+function setAbaConsulta(aba) {
+  var btnAberto = document.getElementById('tabAberto');
+  var btnHistorico = document.getElementById('tabHistorico');
+  var listaAberto = document.getElementById('consultaLista');
+  var listaHistorico = document.getElementById('consultaHistoricoLista');
+
+  if (aba === 'aberto') {
+    btnAberto.style.background = 'rgba(74,222,74,0.15)';
+    btnAberto.style.color = '#4ade4a';
+    btnAberto.style.border = '1px solid rgba(74,222,74,0.3)';
+    btnHistorico.style.background = 'transparent';
+    btnHistorico.style.color = 'rgba(255,255,255,0.4)';
+    btnHistorico.style.border = 'none';
+    listaAberto.style.display = 'block';
+    listaHistorico.style.display = 'none';
+  } else {
+    btnHistorico.style.background = 'rgba(74,222,74,0.15)';
+    btnHistorico.style.color = '#4ade4a';
+    btnHistorico.style.border = '1px solid rgba(74,222,74,0.3)';
+    btnAberto.style.background = 'transparent';
+    btnAberto.style.color = 'rgba(255,255,255,0.4)';
+    btnAberto.style.border = 'none';
+    listaAberto.style.display = 'none';
+    listaHistorico.style.display = 'block';
+    // Carrega historico se ainda nao carregou
+    if (listaHistorico.dataset.loaded !== '1') {
+      carregarHistorico();
+    }
+  }
+}
+
+async function carregarHistorico() {
+  var tel = document.getElementById('consultaTelefone').value.trim();
+  var lista = document.getElementById('consultaHistoricoLista');
+  lista.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);"><span class="spinner"></span> Buscando histórico...</div>';
+
+  try {
+    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=historico&telefone=' + encodeURIComponent(tel.replace(/\D/g,'')));
+    var bilhetes = await resp.json();
+
+    if (!bilhetes || bilhetes.length === 0) {
+      lista.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);">Nenhum bilhete encontrado no histórico.</div>';
+      lista.dataset.loaded = '1';
+      return;
+    }
+
+    // Agrupa por dia
+    var porDia = {};
+    bilhetes.forEach(function(b) {
+      if (!porDia[b.dia]) porDia[b.dia] = [];
+      porDia[b.dia].push(b);
+    });
+
+    var html = '';
+    Object.keys(porDia).sort().reverse().forEach(function(dia) {
+      var dataFmt = dia.split('-').reverse().join('/');
+      html += '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;">📅 ' + dataFmt + ' — ' + porDia[dia].length + ' bilhete(s)</div>';
+
+      porDia[dia].forEach(function(b) {
+        var infoR = mapaConcursos ? (mapaConcursos[b.dataSorteio] || {}) : {};
+        html += '<div style="background:rgba(10,30,10,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:10px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+          '<span style="font-weight:900;font-size:15px;color:white;">BILHETE #' + b.id + '</span>' +
+          '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(74,222,74,0.1);color:#4ade4a;border:1px solid rgba(74,222,74,0.2);">' + b.status + '</span>' +
+          '</div>';
+
+        if (infoR.concurso) html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;">🎯 Concurso ' + infoR.concurso + ' · 📅 ' + dataFmt + '</div>';
+
+        [['J01', b.jogo1], ['J02', b.jogo2], ['J03', b.jogo3]].forEach(function(j) {
+          if (!j[1]) return;
+          html += '<div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.2);border-radius:8px;padding:6px 10px;margin-bottom:4px;">' +
+            '<span style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.3);min-width:30px;">' + j[0] + '</span>' +
+            j[1].split('-').map(function(n){ return '<span style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);font-weight:700;font-size:13px;width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;">' + n + '</span>'; }).join('') +
+            '</div>';
+        });
+        html += '</div>';
+      });
+    });
+
+    lista.innerHTML = html;
+    lista.dataset.loaded = '1';
+  } catch(e) {
+    lista.innerHTML = '<div style="text-align:center;padding:20px;color:#ff6b6b;">Erro ao carregar histórico.</div>';
+  }
 }
 
 function abrirRegulamento() {
