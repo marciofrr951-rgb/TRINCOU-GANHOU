@@ -1184,8 +1184,9 @@ async function consultarBilhetes() {
     document.getElementById('consultaResultado').style.display = 'block';
     // Reset historico
     var histLista = document.getElementById('consultaHistoricoLista');
-    if (histLista) { histLista.innerHTML = ''; histLista.dataset.loaded = '0'; histLista.style.display = 'none'; }
-    setAbaConsulta('aberto');
+    if (histLista) { histLista.innerHTML = ''; histLista.dataset.loaded = '0'; }
+    // Pequeno delay para garantir que os elementos existem no DOM
+    setTimeout(function(){ setAbaConsulta('aberto'); }, 50);
   } catch(e) {
     erroEl.textContent = '⚠️ Erro ao consultar. Tente novamente.';
     erroEl.style.display = 'block';
