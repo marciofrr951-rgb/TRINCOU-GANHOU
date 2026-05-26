@@ -489,14 +489,16 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
   </div>
 
   <div class="trust-row">
-    <div class="trust-card" onclick="showPage('regulamento', document.querySelector('nav button:last-child'))" style="cursor:pointer;">
+    <div class="trust-card" onclick="abrirRegulamento()" style="cursor:pointer;">
       <span class="trust-icon">📋</span>
       <div class="trust-text">Regulamento<br><span style="opacity:0.6;font-weight:400;">Clique para ler</span></div>
     </div>
-    <div class="trust-card">
-      <svg viewBox="0 0 24 24" style="width:36px;height:36px;flex-shrink:0;" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.86L.057 23.428a.75.75 0 00.916.916l5.568-1.475A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.725 9.725 0 01-4.964-1.357l-.355-.212-3.683.975.99-3.585-.232-.369A9.75 9.75 0 1112 21.75z"/></svg>
-      <div class="trust-text">Suporte<br><span style="opacity:0.6;font-weight:400;">WhatsApp</span></div>
-    </div>
+    <a href="https://wa.me/5538999183007" target="_blank" style="text-decoration:none;">
+      <div class="trust-card" style="cursor:pointer;">
+        <svg viewBox="0 0 24 24" style="width:36px;height:36px;flex-shrink:0;" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.86L.057 23.428a.75.75 0 00.916.916l5.568-1.475A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.725 9.725 0 01-4.964-1.357l-.355-.212-3.683.975.99-3.585-.232-.369A9.75 9.75 0 1112 21.75z"/></svg>
+        <div class="trust-text">Suporte<br><span style="opacity:0.6;font-weight:400;">WhatsApp</span></div>
+      </div>
+    </a>
     <div class="trust-card"><span class="trust-icon">18+</span><div class="trust-text">Jogue com<br><span style="opacity:0.6;font-weight:400;">responsabilidade</span></div></div>
   </div>
   <footer>trincouganhou.com.br · 18+ · Baseado nos resultados da Loteria Quina (CEF)</footer>
@@ -589,6 +591,97 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
     </div>
   </div>
   <footer>trincouganhou.com.br · 18+ · Baseado nos resultados da Loteria Quina (CEF)</footer>
+</div>
+
+<!-- PÁGINA REGULAMENTO -->
+<div id="page-regulamento" class="page">
+  <div class="page-inner" style="max-width:560px;">
+    <div class="section-header">📋 Regulamento</div>
+    <div class="section-sub">Trincou Ganhou — Regulamento Oficial</div>
+
+    <div style="background:rgba(10,30,10,0.8);border:1px solid rgba(74,222,74,0.2);border-radius:16px;padding:20px;margin-bottom:12px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:6px;">🍀</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:white;letter-spacing:2px;">TRINCOU GANHOU</div>
+      <div style="margin-top:8px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">
+        <div style="background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);border-radius:20px;padding:6px 16px;font-size:13px;font-weight:700;color:#f5c518;">💰 Mínimo R$250,00</div>
+        <div style="background:rgba(74,222,74,0.1);border:1px solid rgba(74,222,74,0.2);border-radius:20px;padding:6px 16px;font-size:13px;font-weight:700;color:#4ade4a;">🎟️ R$2,50 por bilhete</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div style="background:rgba(10,30,10,0.8);border:1px solid rgba(74,222,74,0.15);border-radius:14px;padding:18px;">
+        <div style="font-weight:900;font-size:15px;color:#4ade4a;margin-bottom:10px;">1. COMO JOGAR</div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:10px;">🔹 Cada jogador escolhe seu bilhete impresso, faz a leitura do QR Code, acessa o site, digita o número do bilhete e efetua o pagamento via PIX ou Dinheiro através de um cambista.</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:10px;">🔹 Se preferir, o jogador pode acessar o site e escolher seus próprios palpites.</p>
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:12px;margin-top:8px;">
+          <div style="font-size:12px;font-weight:700;color:#4ade4a;margin-bottom:6px;">Cada bilhete possui:</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
+            ✦ Jogo 01 → 3 números (01 a 80)<br>
+            ✦ Jogo 02 → 3 números (01 a 80)<br>
+            ✦ Jogo 03 → 3 números (01 a 80)
+          </div>
+        </div>
+        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;line-height:1.5;">⚠️ Todo palpite deve ser registrado no site. O jogador terá acesso a todos os seus bilhetes registrados na aba <strong style="color:#4ade4a;">MEUS BILHETES</strong>.</p>
+      </div>
+
+      <div style="background:rgba(10,30,10,0.8);border:1px solid rgba(74,222,74,0.15);border-radius:14px;padding:18px;">
+        <div style="font-weight:900;font-size:15px;color:#4ade4a;margin-bottom:10px;">2. OBJETIVO</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8;">
+          🏆 Vence quem acertar:<br>
+          <div style="margin-top:6px;padding-left:8px;">
+            ✅ As 3 dezenas do Jogo 01<br>
+            <span style="color:rgba(255,255,255,0.4);padding-left:8px;">ou</span><br>
+            ✅ As 3 dezenas do Jogo 02<br>
+            <span style="color:rgba(255,255,255,0.4);padding-left:8px;">ou</span><br>
+            ✅ As 3 dezenas do Jogo 03
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(10,30,10,0.8);border:1px solid rgba(245,197,24,0.2);border-radius:14px;padding:18px;">
+        <div style="font-weight:900;font-size:15px;color:#f5c518;margin-bottom:10px;">3. PREMIAÇÃO</div>
+        <div style="font-size:18px;font-weight:900;color:#f5c518;margin-bottom:10px;">💰 R$250,00 — Trincou Ganhou</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8;">
+          ➡️ Caso não haja ganhador no dia, o prêmio acumula automaticamente para o próximo sorteio (R$500,00 e assim por diante).<br><br>
+          ➡️ Em caso de mais de um ganhador, o prêmio será dividido igualmente entre os vencedores.<br><br>
+          ➡️ O prêmio é acumulativo enquanto não houver ganhador.
+        </div>
+      </div>
+
+      <div style="background:rgba(10,30,10,0.8);border:1px solid rgba(74,222,74,0.15);border-radius:14px;padding:18px;">
+        <div style="font-weight:900;font-size:15px;color:#4ade4a;margin-bottom:10px;">4. BASE DO JOGO</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8;">
+          O jogo utiliza os resultados oficiais da Caixa Econômica Federal através da modalidade <strong style="color:#4ade4a;">Quina</strong>.<br><br>
+          📅 Os sorteios acontecem de <strong style="color:white;">segunda a sábado</strong>.<br>
+          📌 O concurso válido será informado no bilhete.
+        </div>
+      </div>
+
+      <div style="background:rgba(10,30,10,0.8);border:1px solid rgba(74,222,74,0.15);border-radius:14px;padding:18px;">
+        <div style="font-weight:900;font-size:15px;color:#4ade4a;margin-bottom:10px;">5. TRANSPARÊNCIA</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8;">
+          Todos os participantes terão acesso no site a:<br><br>
+          ✅ Seus bilhetes válidos<br>
+          ✅ Resultados diários da Quina<br>
+          ✅ Conferência oficial dos bilhetes<br>
+          ✅ Divulgação dos ganhadores
+        </div>
+      </div>
+
+      <div style="background:rgba(10,30,10,0.8);border:1px solid rgba(74,222,74,0.15);border-radius:14px;padding:18px;">
+        <div style="font-weight:900;font-size:15px;color:#4ade4a;margin-bottom:10px;">6. CONDIÇÕES GERAIS</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8;">
+          🔹 Ao registrar o bilhete, o jogador declara estar de acordo com este regulamento.<br><br>
+          🔹 O TRINCOU GANHOU não possui vínculo com a Caixa Econômica Federal, utilizando apenas os resultados oficiais da Quina como base dos sorteios.<br><br>
+          <div style="background:rgba(224,49,49,0.1);border:1px solid rgba(224,49,49,0.3);border-radius:8px;padding:8px 12px;margin-top:4px;">
+            🔞 <strong style="color:#ff6b6b;">Proibido para menores de 18 anos.</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- PÁGINA GANHADORES -->
@@ -1523,6 +1616,13 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
+}
+
+function abrirRegulamento() {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('nav button').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('page-regulamento').classList.add('active');
+  window.scrollTo(0, 0);
 }
 
 function showPage(page, btn) {
