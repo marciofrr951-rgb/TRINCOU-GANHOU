@@ -1630,25 +1630,18 @@ function setAbaConsulta(aba) {
   var listaAberto = document.getElementById('consultaLista');
   var listaHistorico = document.getElementById('consultaHistoricoLista');
 
+  if (!btnAberto || !btnHistorico || !listaAberto || !listaHistorico) return;
+
   if (aba === 'aberto') {
-    btnAberto.style.background = 'rgba(74,222,74,0.15)';
-    btnAberto.style.color = '#4ade4a';
-    btnAberto.style.border = '1px solid rgba(74,222,74,0.3)';
-    btnHistorico.style.background = 'transparent';
-    btnHistorico.style.color = 'rgba(255,255,255,0.4)';
-    btnHistorico.style.border = 'none';
+    btnAberto.style.cssText = 'flex:1;padding:10px;border-radius:10px;border:1px solid rgba(74,222,74,0.3);background:rgba(74,222,74,0.15);color:#4ade4a;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;';
+    btnHistorico.style.cssText = 'flex:1;padding:10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;';
     listaAberto.style.display = 'block';
     listaHistorico.style.display = 'none';
   } else {
-    btnHistorico.style.background = 'rgba(74,222,74,0.15)';
-    btnHistorico.style.color = '#4ade4a';
-    btnHistorico.style.border = '1px solid rgba(74,222,74,0.3)';
-    btnAberto.style.background = 'transparent';
-    btnAberto.style.color = 'rgba(255,255,255,0.4)';
-    btnAberto.style.border = 'none';
+    btnHistorico.style.cssText = 'flex:1;padding:10px;border-radius:10px;border:1px solid rgba(74,222,74,0.3);background:rgba(74,222,74,0.15);color:#4ade4a;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;';
+    btnAberto.style.cssText = 'flex:1;padding:10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;';
     listaAberto.style.display = 'none';
     listaHistorico.style.display = 'block';
-    // Carrega historico se ainda nao carregou
     if (listaHistorico.dataset.loaded !== '1') {
       carregarHistorico();
     }
