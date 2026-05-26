@@ -961,7 +961,7 @@ async function consultarBilhetes() {
     const mapaConcursos = {};
     resultados.forEach(r => {
       mapaResultados[r.data] = r.numeros.split(',').map(n => parseInt(n));
-      mapaConcursos[r.data] = { concurso: r.concurso || '', data: r.data };
+      mapaConcursos[r.data] = { concurso: r.concurso || '', data: r.data, premio: r.premio || '250' };
     });
 
     function verificarJogo(jogo, sorteados) {
@@ -1051,6 +1051,7 @@ async function consultarBilhetes() {
             id: id, j1: j1, j2: j2, j3: j3,
             dataSorteio: dataFormatada,
             concurso: infoResultado.concurso || '',
+            premio: infoResultado.premio || '250',
             sorteados: sorteados,
             g1: g1, g2: g2, g3: g3, ganhou: ganhou,
             status: status
@@ -1182,170 +1183,221 @@ function selecionarTodos() {
 function gerarImagemBilhetes() {
   var checks = document.querySelectorAll('[id^="chk-"]:checked');
   if (checks.length === 0) { alert('Selecione pelo menos um bilhete!'); return; }
-
   var ids = Array.from(checks).map(function(c){ return c.value; });
   var bilhetes = (window._bilhetesEncontrados || []).filter(function(b){ return ids.includes(b.id); });
   if (bilhetes.length === 0) return;
 
-  // Canvas
-  var W = 600;
-  var headerH = 120;
-  var bilheteH = 200;
-  var paddingH = 20;
-  var H = headerH + (bilhetes.length * (bilheteH + paddingH)) + 40;
+  var W = 480;
+  var recH = 520; // altura por bilhete
+  var gap = 30;
+  var H = bilhetes.length * (recH + gap) + gap;
 
   var canvas = document.createElement('canvas');
-  canvas.width = W * 2; // retina
+  canvas.width = W * 2;
   canvas.height = H * 2;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
   var ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
 
-  // Fundo
-  ctx.fillStyle = '#0a1a0a';
+  // Fundo geral
+  ctx.fillStyle = '#d4cfbf';
   ctx.fillRect(0, 0, W, H);
 
-  // Header
-  ctx.fillStyle = '#0d2a0d';
-  ctx.fillRect(0, 0, W, headerH);
-  ctx.strokeStyle = 'rgba(74,222,74,0.3)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(0, 0, W, headerH);
+  var agora = new Date();
+  var dataHoje = agora.toLocaleDateString('pt-BR');
+  var horaAgora = agora.toLocaleTimeString('pt-BR');
 
-  // Trevo
-  ctx.font = 'bold 32px Arial';
-  ctx.fillStyle = '#4ade4a';
-  ctx.textAlign = 'center';
-  ctx.fillText('🍀', W/2, 38);
-
-  // Nome
-  ctx.font = 'bold 22px Arial';
-  ctx.fillStyle = 'white';
-  ctx.fillText('TRINCOU', W/2, 62);
-  ctx.fillStyle = '#4ade4a';
-  ctx.fillText('GANHOU', W/2, 84);
-
-  ctx.font = '11px Arial';
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.fillText('trincouganhou.com.br', W/2, 104);
-
-  // Bilhetes
   bilhetes.forEach(function(b, idx) {
-    var y = headerH + paddingH + idx * (bilheteH + paddingH);
-    var pad = 16;
+    var y = gap + idx * (recH + gap);
+    var pad = 24;
+    var cW = W - pad * 2;
 
-    // Card bg
-    ctx.fillStyle = 'rgba(15,35,15,0.95)';
-    roundRect(ctx, pad, y, W - pad*2, bilheteH, 12);
+    // Fundo do recibo
+    ctx.fillStyle = '#f5f0e8';
+    roundRect(ctx, pad, y, cW, recH, 6);
     ctx.fill();
-    ctx.strokeStyle = b.ganhou ? 'rgba(74,222,74,0.5)' : b.sorteados ? 'rgba(224,49,49,0.3)' : 'rgba(245,197,24,0.3)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Bilhete numero
-    ctx.font = 'bold 18px Arial';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'left';
-    ctx.fillText('BILHETE #' + b.id, pad + 14, y + 26);
+    // ── HEADER ──
+    // Circulo logo
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.arc(pad + 52, y + 52, 40, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#2ecc2e';
+    ctx.beginPath();
+    ctx.arc(pad + 52, y + 52, 34, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.arc(pad + 52, y + 52, 28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = 'bold 28px Arial';
+    ctx.fillStyle = '#2ecc2e';
+    ctx.textAlign = 'center';
+    ctx.fillText('🍀', pad + 52, y + 60);
 
-    // Status badge
-    if (b.ganhou) {
-      ctx.fillStyle = 'rgba(74,222,74,0.2)';
-      roundRect(ctx, W - 110, y + 10, 94, 22, 11);
-      ctx.fill();
-      ctx.font = 'bold 11px Arial';
-      ctx.fillStyle = '#4ade4a';
+    // Nome TRINCOU GANHOU
+    ctx.font = 'bold 28px Arial';
+    ctx.fillStyle = '#1a1a1a';
+    ctx.textAlign = 'left';
+    ctx.fillText('TRINCOU', pad + 104, y + 44);
+    ctx.fillStyle = '#1a7a1a';
+    ctx.fillText('GANHOU', pad + 104, y + 72);
+
+    // Estrelas decorativas
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#1a1a1a';
+    ctx.textAlign = 'center';
+    ctx.fillText('★', pad + 20, y + 58);
+    ctx.fillText('★', pad + cW - 8, y + 58);
+
+    // Linha tracejada
+    dashedLine(ctx, pad, y + 100, pad + cW, y + 100, '#aaa', 4, 6);
+
+    // ── INFO COMPRA ──
+    var iy = y + 120;
+    ctx.font = '13px Arial';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'left';
+    ctx.fillText('Data: ' + dataHoje, pad + 8, iy);
+    ctx.fillText('Horario: ' + horaAgora, pad + 8, iy + 18);
+    if (b.cambista) ctx.fillText('Colaborador: ' + b.cambista, pad + 8, iy + 36);
+
+    dashedLine(ctx, pad, y + 168, pad + cW, y + 168, '#aaa', 4, 6);
+
+    // ── CONCURSO ──
+    var cy = y + 186;
+    ctx.font = 'bold 13px Arial';
+    ctx.fillStyle = '#1a1a1a';
+    if (b.concurso) ctx.fillText('Concurso:  ' + b.concurso, pad + 8, cy);
+    if (b.dataSorteio) ctx.fillText('Data do sorteio:  ' + b.dataSorteio, pad + 8, cy + 20);
+
+    dashedLine(ctx, pad, y + 218, pad + cW, y + 218, '#aaa', 4, 6);
+
+    // ── JOGOS ──
+    var jogos = [
+      {label:'Jogo01', nums: b.j1 ? b.j1.split('-') : [], ganhou: b.g1},
+      {label:'Jogo02', nums: b.j2 ? b.j2.split('-') : [], ganhou: b.g2},
+      {label:'Jogo03', nums: b.j3 ? b.j3.split('-') : [], ganhou: b.g3},
+    ];
+
+    jogos.forEach(function(jogo, ji) {
+      var jy = y + 236 + ji * 34;
+      var numTxt = jogo.nums.join(' - ');
+
+      // Label verde
+      ctx.font = 'bold 15px Arial';
+      ctx.fillStyle = '#1a7a1a';
       ctx.textAlign = 'center';
-      ctx.fillText('🏆 GANHOU!', W - 63, y + 25);
-    }
+      ctx.fillText(jogo.label, pad + 54, jy + 2);
 
-    // Info concurso e data
-    ctx.font = '11px Arial';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.textAlign = 'left';
-    var infoTxt = '';
-    if (b.concurso) infoTxt += 'Concurso ' + b.concurso + '  ·  ';
-    if (b.dataSorteio) infoTxt += b.dataSorteio;
-    ctx.fillText(infoTxt, pad + 14, y + 44);
+      // Separador vertical
+      ctx.fillStyle = '#aaa';
+      ctx.fillRect(pad + 90, jy - 12, 1, 20);
 
-    // Sorteados
+      // Números
+      ctx.font = 'bold 15px Arial';
+      ctx.fillStyle = '#1a1a1a';
+      ctx.textAlign = 'left';
+      ctx.fillText(' ' + numTxt, pad + 96, jy + 2);
+
+      // Resultado por jogo
+      if (b.sorteados !== null) {
+        ctx.font = 'bold 12px Arial';
+        ctx.fillStyle = jogo.ganhou ? '#1a7a1a' : '#cc2222';
+        ctx.textAlign = 'right';
+        ctx.fillText(jogo.ganhou ? '✓ GANHOU' : '✗ PERDEU', pad + cW - 4, jy + 2);
+      }
+
+      dashedLine(ctx, pad, jy + 12, pad + cW, jy + 12, '#ccc', 3, 5);
+    });
+
+    // ── SORTEADOS (se tiver resultado) ──
     if (b.sorteados) {
-      ctx.font = '10px Arial';
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.fillText('Sorteados:', pad + 14, y + 62);
+      var sy = y + 342;
+      ctx.font = '11px Arial';
+      ctx.fillStyle = '#666';
+      ctx.textAlign = 'left';
+      ctx.fillText('Sorteados:', pad + 8, sy);
       b.sorteados.forEach(function(n, ni) {
-        var bx = pad + 80 + ni * 38;
-        var by = y + 52;
+        var bx = pad + 75 + ni * 34;
         ctx.fillStyle = '#7c3aed';
         ctx.beginPath();
-        ctx.arc(bx + 14, by + 8, 14, 0, Math.PI*2);
+        ctx.arc(bx, sy - 5, 12, 0, Math.PI*2);
         ctx.fill();
-        ctx.font = 'bold 12px Arial';
+        ctx.font = 'bold 10px Arial';
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
-        ctx.fillText(String(n).padStart(2,'0'), bx + 14, by + 13);
+        ctx.fillText(String(n).padStart(2,'0'), bx, sy - 1);
       });
     }
 
-    // Jogos
-    var jogos = [
-      {label:'J01', nums: b.j1 ? b.j1.split('-') : [], ganhou: b.g1},
-      {label:'J02', nums: b.j2 ? b.j2.split('-') : [], ganhou: b.g2},
-      {label:'J03', nums: b.j3 ? b.j3.split('-') : [], ganhou: b.g3},
-    ];
-    jogos.forEach(function(jogo, ji) {
-      var jy = y + 78 + ji * 36;
-      var jx = pad + 14;
+    // ── TOTAL / PREMIO ──
+    var ty = y + 370;
+    ctx.font = '13px Arial';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'left';
+    ctx.fillText('Total Apostado:', pad + 8, ty);
+    ctx.textAlign = 'right';
+    ctx.fillText('R$2,50', pad + cW - 4, ty);
 
-      // Fundo jogo
-      ctx.fillStyle = jogo.ganhou ? 'rgba(74,222,74,0.08)' : 'rgba(0,0,0,0.3)';
-      roundRect(ctx, jx, jy, W - pad*2 - 28, 30, 8);
-      ctx.fill();
-      ctx.strokeStyle = jogo.ganhou ? 'rgba(74,222,74,0.4)' : 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
+    ctx.font = '13px Arial';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'left';
+    ctx.fillText('Possivel Retorno:', pad + 8, ty + 18);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#1a7a1a';
+    ctx.font = 'bold 13px Arial';
+    ctx.fillText('R$' + (b.premio || '250') + ',00', pad + cW - 4, ty + 18);
 
-      // Label
-      ctx.font = 'bold 10px Arial';
-      ctx.fillStyle = jogo.ganhou ? '#4ade4a' : 'rgba(255,255,255,0.4)';
-      ctx.textAlign = 'left';
-      ctx.fillText(jogo.label, jx + 8, jy + 19);
+    dashedLine(ctx, pad, ty + 30, pad + cW, ty + 30, '#aaa', 4, 6);
 
-      // Numeros
-      jogo.nums.forEach(function(n, ni) {
-        var nx = jx + 48 + ni * 40;
-        var ny = jy + 4;
-        var acertou = b.sorteados && b.sorteados.includes(parseInt(n));
-        ctx.fillStyle = acertou ? '#f5c518' : 'rgba(255,255,255,0.08)';
-        roundRect(ctx, nx, ny, 32, 22, 6);
-        ctx.fill();
-        ctx.font = 'bold 12px Arial';
-        ctx.fillStyle = acertou ? '#0a1a0a' : 'rgba(255,255,255,0.8)';
-        ctx.textAlign = 'center';
-        ctx.fillText(n, nx + 16, ny + 15);
-      });
+    // ── NUMERO BILHETE ──
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#555';
+    ctx.textAlign = 'center';
+    ctx.fillText('BILHETE', W/2, ty + 48);
 
-      // Badge ganhou/perdeu
-      if (b.sorteados) {
-        var badgeTxt = jogo.ganhou ? '✓ GANHOU' : '✗ PERDEU';
-        ctx.font = 'bold 10px Arial';
-        ctx.fillStyle = jogo.ganhou ? '#4ade4a' : '#ff6b6b';
-        ctx.textAlign = 'right';
-        ctx.fillText(badgeTxt, W - pad - 28 + 14 - 8, jy + 19);
-      }
-    });
+    ctx.font = 'bold 36px Arial';
+    ctx.fillStyle = '#1a1a1a';
+    ctx.textAlign = 'center';
+    ctx.fillText('#' + b.id, W/2, ty + 82);
+
+    // Banner GANHOU no bilhete inteiro
+    if (b.ganhou) {
+      dashedLine(ctx, pad, ty + 90, pad + cW, ty + 90, '#1a7a1a', 4, 6);
+      ctx.font = 'bold 16px Arial';
+      ctx.fillStyle = '#1a7a1a';
+      ctx.textAlign = 'center';
+      ctx.fillText('🏆 PARABENS! VOCE GANHOU!', W/2, ty + 112);
+    }
+
+    // ── RODAPE ──
+    dashedLine(ctx, pad, y + recH - 44, pad + cW, y + recH - 44, '#aaa', 4, 6);
+    ctx.font = '10px Arial';
+    ctx.fillStyle = '#888';
+    ctx.textAlign = 'center';
+    ctx.fillText('Se houver mais de um ganhador o premio sera dividido por igual,', W/2, y + recH - 28);
+    ctx.fillText('conforme regulamento no site.', W/2, y + recH - 14);
   });
 
-  // Rodape
-  ctx.font = '10px Arial';
-  ctx.fillStyle = 'rgba(255,255,255,0.2)';
-  ctx.textAlign = 'center';
-  ctx.fillText('Gerado em ' + new Date().toLocaleString('pt-BR'), W/2, H - 12);
-
-  // Mostra modal com prévia
   var imgData = canvas.toDataURL('image/png');
   mostrarModalCompartilhar(imgData);
+}
+
+function dashedLine(ctx, x1, y1, x2, y2, color, dash, gap) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([dash, gap]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
 }
 
 function fecharModalCompartilhar() {
