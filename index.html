@@ -833,21 +833,6 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
           </button>
           <div id="criarPinMsg" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;text-align:center;"></div>
         </div>
-        <div style="margin-top:10px;">
-          <button onclick="mostrarPinVirtual()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;">
-            💵 Pagar em dinheiro
-          </button>
-        </div>
-        <div id="criarPinBox" style="display:none;margin-top:10px;background:rgba(74,222,74,0.05);border:1.5px solid rgba(74,222,74,0.3);border-radius:12px;padding:14px;">
-          <div class="input-label" style="color:#4ade4a;margin-bottom:6px;">🔑 PIN do cambista</div>
-          <input type="password" id="criarPin"
-            style="width:100%;padding:10px 14px;border:1.5px solid rgba(74,222,74,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;margin-bottom:10px;"
-            placeholder="Digite o PIN" oninput="this.value=this.value.replace(/[^0-9]/g,'')" maxlength="10"/>
-          <button onclick="pagarCarrinhoVirtual('dinheiro')" style="width:100%;background:rgba(74,222,74,0.15);color:#4ade4a;border:1px solid rgba(74,222,74,0.4);border-radius:10px;padding:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">
-            ✅ Confirmar pagamento em dinheiro
-          </button>
-          <div id="criarPinMsg" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;text-align:center;"></div>
-        </div>
       </div>
 
       <!-- Resultado final -->
