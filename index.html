@@ -484,7 +484,7 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
               oninput="this.value=this.value.replace(/[^\d\s\(\)\-\+]/g,'')"/>
             <div id="telefoneErro" style="display:none;color:#ff6b6b;font-size:12px;margin-top:4px;font-weight:700;">⚠️ Preencha seu WhatsApp para continuar!</div>
           </div>
-          <button class="btn-pagar" id="btnPagar" onclick="gerarPagamento()"><svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect fill="#4ade4a" rx="6" width="32" height="32"/><text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="bold" fill="#000">Pix</text></svg></button>
+          <button class="btn-pagar" id="btnPagar" onclick="gerarPagamento()" style="display:flex;align-items:center;justify-content:center;gap:10px;">Pagar com <span style="background:#fff;border-radius:8px;padding:6px 12px;display:inline-flex;align-items:center;"><img src="pix-logo.png" alt="Pix" style="height:26px;display:block;"/></span></button>
           <div style="margin-top:10px;">
             <button onclick="mostrarPagoDinheiro()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;">
               💵 Registrar pago em dinheiro
@@ -817,7 +817,7 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
         <div class="msg-loading" id="criarLoading" style="display:none;"><span class="spinner"></span> Processando...</div>
 
         <!-- Botões pagamento -->
-        <button class="btn-pagar" onclick="pagarCarrinhoVirtual('pix')" id="btnCriarPix"><svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect fill="#4ade4a" rx="6" width="32" height="32"/><text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="bold" fill="#000">Pix</text></svg></button>
+        <button class="btn-pagar" onclick="pagarCarrinhoVirtual('pix')" id="btnCriarPix" style="display:flex;align-items:center;justify-content:center;gap:10px;">Pagar com <span style="background:#fff;border-radius:8px;padding:6px 12px;display:inline-flex;align-items:center;"><img src="pix-logo.png" alt="Pix" style="height:26px;display:block;"/></span></button>
         <div style="margin-top:10px;">
           <button onclick="mostrarPinVirtual()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;">
             💵 Pagar em dinheiro
