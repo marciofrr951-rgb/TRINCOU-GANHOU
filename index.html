@@ -501,22 +501,6 @@ footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.2); font-s
             </div>
           </div>
           <div class="pix-note" id="pixNote">Após o pagamento, seu bilhete será validado automaticamente.</div>
-          <div style="margin-top:10px;">
-            <button onclick="mostrarPagoDinheiro()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);cursor:pointer;">
-              💵 Registrar pago em dinheiro
-            </button>
-          </div>
-          <div id="pagoDinheiroBox" style="display:none;margin-top:12px;background:rgba(74,222,74,0.05);border:1.5px solid rgba(74,222,74,0.3);border-radius:12px;padding:14px;">
-            <div class="input-label" style="color:#4ade4a;margin-bottom:6px;">🔑 PIN do cambista</div>
-            <input type="password" id="cambistaPin"
-              style="width:100%;padding:10px 14px;border:1.5px solid rgba(74,222,74,0.3);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:rgba(0,0,0,0.4);color:white;outline:none;margin-bottom:10px;"
-              placeholder="Digite seu PIN" oninput="this.value=this.value.replace(/\D/g,'')" maxlength="10"/>
-            <button onclick="registrarDinheiro()" style="width:100%;background:rgba(74,222,74,0.15);color:#4ade4a;border:1px solid rgba(74,222,74,0.4);border-radius:10px;padding:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">
-              ✅ Confirmar pagamento em dinheiro
-            </button>
-            <div id="dinheiroMsg" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;text-align:center;"></div>
-          </div>
-          <div class="pix-note" id="pixNote">Após o pagamento, seu bilhete será validado automaticamente.</div>
         </div>
       </div>
     </div>
@@ -1067,6 +1051,10 @@ function exibirResultado(bilhete) {
       </div>`;
     grid.appendChild(row);
   });
+
+  // Remove botão de compartilhar de uma compra anterior, se existir
+  var compAntigo = document.getElementById('compartilharDinheiroBilheteUnico');
+  if (compAntigo) compAntigo.remove();
 
   // Mostrar/ocultar botão de pagamento
   const pixBox = document.getElementById('pixBox');
@@ -2622,14 +2610,18 @@ function abrirCompartilharLote() {
 
 function mostrarCompartilharDinheiroBilheteUnico(bilhete, telefone, cambista) {
   console.log('mostrarCompartilhar interno - bilhete:', bilhete);
-  var pagoDinheiroBox = document.getElementById('pagoDinheiroBox');
-  
-  if (pagoDinheiroBox && !document.getElementById('compartilharDinheiroBilheteUnico')) {
-    var html = '<div id="compartilharDinheiroBilheteUnico" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(74,222,74,0.2);"><button style="width:100%;background:linear-gradient(135deg,#4ade4a,#2ecc2e);color:#0a1f0a;border:none;border-radius:14px;padding:16px;font-family:Nunito,sans-serif;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:1px;transition:all 0.3s;" id="btnCompartilharDinheiroUnico">📱 Compartilhar meu bilhete agora</button></div>';
-    
-    pagoDinheiroBox.innerHTML += html;
+  // Insere em #resultado, que permanece visível após o pixBox ser ocultado
+  var container = document.getElementById('resultado');
+
+  if (container && !document.getElementById('compartilharDinheiroBilheteUnico')) {
+    var wrap = document.createElement('div');
+    wrap.id = 'compartilharDinheiroBilheteUnico';
+    wrap.style.cssText = 'margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(74,222,74,0.2);';
+    wrap.innerHTML = '<button style="width:100%;background:linear-gradient(135deg,#4ade4a,#2ecc2e);color:#0a1f0a;border:none;border-radius:14px;padding:16px;font-family:Nunito,sans-serif;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:1px;transition:all 0.3s;" id="btnCompartilharDinheiroUnico">📱 Compartilhar meu bilhete agora</button>';
+
+    container.appendChild(wrap);
     console.log('HTML adicionado direto');
-    
+
     var btn = document.getElementById('btnCompartilharDinheiroUnico');
     if (btn) {
       btn.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(74,222,74,0.4)'; };
