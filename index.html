@@ -2508,13 +2508,6 @@ async function confirmarJogo() {
   }
 }
 
-function abrirCompartilharVirtual() {
-  if (!_bilheteVirtualAtual) return;
-  window._bilhetesEncontrados = [_bilheteVirtualAtual];
-  // Seleciona automaticamente
-  gerarImagemBilhetes_direto([_bilheteVirtualAtual]);
-}
-
 function mostrarCompartilharAposConfirmacao() {
   // Essa função aparece após confirmação de pagamento
   // Cria um container para o botão de compartilhamento
