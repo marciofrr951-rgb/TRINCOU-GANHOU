@@ -2660,6 +2660,31 @@ async function gerarImagemBilhetes_direto(bilhetes) {
   if (!bilhetes || bilhetes.length === 0) return;
   await _logoCarregada;
 
+  // Puxa a hora real de pagamento (dataPag) direto da planilha, pelo ID, para
+  // o bilhete sair com o horário em que foi registrado — e não o do clique.
+  try {
+    var respSheet = await fetch('/script?acao=getBilhetes&aba=Bilhetes');
+    var linhasSheet = await respSheet.json();
+    if (Array.isArray(linhasSheet)) {
+      var mapaDataPag = {};
+      linhasSheet.forEach(function(row) {
+        var rid = String(row.id || '');
+        if (rid && row.dataPag) mapaDataPag[rid] = String(row.dataPag);
+      });
+      bilhetes.forEach(function(b) {
+        var real = mapaDataPag[String(b.id)];
+        if (real) {
+          // Normaliza caso venha como objeto Date longo do Apps Script
+          if (real.length > 20) {
+            var m = real.match(/(\d{2}\/\d{2}\/\d{4}\s\d{2}:\d{2})/);
+            real = m ? m[1] : real;
+          }
+          b.dataPag = real;
+        }
+      });
+    }
+  } catch (e) { /* mantém o dataPag local como fallback */ }
+
   var W = 520;
   var gap = 30;
 
