@@ -7,11 +7,15 @@ export async function onRequestPost(context) {
   };
 
   try {
-    const { bilhete_id, valor, descricao, telefone, cambista } = await request.json();
+    const { bilhete_id, valor, descricao, telefone, cambista, jogo } = await request.json();
+
+    // Prefixa o jogo no external_reference para o webhook saber qual aba/ação atualizar.
+    // Sem jogo (ex.: Trincou) mantém o formato antigo, garantindo compatibilidade.
+    const idComJogo = jogo ? `${jogo}:${bilhete_id}` : bilhete_id;
 
     const extRef = telefone
-      ? `${bilhete_id}|${telefone}|${cambista || ''}`
-      : bilhete_id;
+      ? `${idComJogo}|${telefone}|${cambista || ''}`
+      : idComJogo;
 
     const siteUrl = new URL(request.url).origin;
 

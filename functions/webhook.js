@@ -19,18 +19,30 @@ export async function onRequestPost(context) {
     if (!payment.external_reference) return new Response('OK', { status: 200 });
 
     // external_reference: "ids|telefone|cambista"
+    // ids pode vir prefixado com o jogo: "oito:R1C05" ou, no Trincou, só "12345"
     const parts = payment.external_reference.split('|');
-    const idsStr  = parts[0];
+    let idsStr   = parts[0];
     const telefone = parts[1] || '';
     const cambista = parts[2] || '';
+
+    // Detecta o jogo pelo prefixo "<jogo>:"
+    let jogo = '';
+    const sep = idsStr.indexOf(':');
+    if (sep > 0) {
+      jogo = idsStr.slice(0, sep).toLowerCase();
+      idsStr = idsStr.slice(sep + 1);
+    }
     const ids = idsStr.split(',').map(id => id.trim()).filter(Boolean);
 
     const scriptUrl = env.APPS_SCRIPT_URL;
     for (const id of ids) {
+      const body = jogo === 'oito'
+        ? `acao=oito_baixa&id=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}&cambista=${encodeURIComponent(cambista)}`
+        : `bilhete=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}&cambista=${encodeURIComponent(cambista)}`;
       await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `bilhete=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}&cambista=${encodeURIComponent(cambista)}`,
+        body,
       });
     }
 
