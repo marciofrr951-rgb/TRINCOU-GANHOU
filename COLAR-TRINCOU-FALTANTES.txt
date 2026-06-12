@@ -1,0 +1,110 @@
+// ===== FUNCOES DO TRINCOU QUE FORAM APAGADAS (colar no FINAL do Apps Script) =====
+
+function getResultado(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sRes = ss.getSheetByName('Resultados');
+  if (!sRes) return json([]);
+  const data = e.parameter.data || '';
+  const vals = sRes.getDataRange().getValues();
+  if (vals.length < 2) return json([]);
+  const result = vals.slice(1).map(function(row){
+    var dataVal = row[0], dataStr = '';
+    if (dataVal instanceof Date) {
+      dataStr = Utilities.formatDate(dataVal, 'America/Sao_Paulo', 'yyyy-MM-dd');
+    } else {
+      dataStr = String(dataVal);
+      if (dataStr.indexOf('/') >= 0) { var p = dataStr.split('/'); if (p.length === 3) dataStr = p[2]+'-'+('0'+p[1]).slice(-2)+'-'+('0'+p[0]).slice(-2); }
+    }
+    return {
+      data: dataStr,
+      numeros: String(row[1]),
+      publicado: row[2] ? Utilities.formatDate(new Date(row[2]), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : '',
+      concurso: String(row[3] || ''),
+      premio: String(row[4] || ''),
+      ganhador: String(row[5] || '')
+    };
+  });
+  if (data) { var found = result.filter(function(r){ return r.data === data; })[0]; return json(found || null); }
+  return json(result.sort(function(a,b){ return b.data.localeCompare(a.data); }));
+}
+
+function getStatusPagamentos(e) {
+  var fechado = PropertiesService.getScriptProperties().getProperty('PAGAMENTOS_FECHADOS') === 'true';
+  return ok(fechado ? 'FECHADO' : 'ABERTO');
+}
+
+function getCambistas(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const s = ss.getSheetByName('Cambistas');
+  if (!s) return json([]);
+  const vals = s.getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < vals.length; i++) {
+    if (!vals[i][0]) continue;
+    out.push({ nome: String(vals[i][0] || ''), pin: String(vals[i][1] || ''), ativo: String(vals[i][2] || ''), telefone: String(vals[i][3] || '') });
+  }
+  return json(out);
+}
+
+function getBilhetes(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const aba = e.parameter.aba || 'Bilhetes';
+  const s = ss.getSheetByName(aba);
+  if (!s) return json([]);
+  const vals = s.getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < vals.length; i++) {
+    var id = String(vals[i][0]).replace(/'/g, '');
+    if (!id) continue;
+    out.push({
+      id: id.length < 4 ? ('000' + id).slice(-4) : id,
+      jogo1: vals[i][1] instanceof Date ? Utilities.formatDate(vals[i][1],'America/Sao_Paulo','dd-MM-yy') : String(vals[i][1] || ''),
+      jogo2: vals[i][2] instanceof Date ? Utilities.formatDate(vals[i][2],'America/Sao_Paulo','dd-MM-yy') : String(vals[i][2] || ''),
+      jogo3: vals[i][3] instanceof Date ? Utilities.formatDate(vals[i][3],'America/Sao_Paulo','dd-MM-yy') : String(vals[i][3] || ''),
+      data: vals[i][4] instanceof Date ? Utilities.formatDate(vals[i][4],'America/Sao_Paulo','yyyy-MM-dd') : String(vals[i][4] || ''),
+      status: String(vals[i][5] || ''),
+      tel: String(vals[i][6] || ''),
+      cambista: String(vals[i][7] || ''),
+      dataPag: vals[i][8] instanceof Date ? Utilities.formatDate(vals[i][8],'America/Sao_Paulo','dd/MM/yyyy HH:mm') : String(vals[i][8] || '').substring(0,16)
+    });
+  }
+  return json(out);
+}
+
+function getBilheteUnico(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const s = ss.getSheetByName('Bilhetes');
+  if (!s) return json(null);
+  var idBusca = String(e.parameter.id || '').replace(/'/g, '').replace(/^0+/, '') || '0';
+  const vals = s.getDataRange().getValues();
+  for (var i = 1; i < vals.length; i++) {
+    var idRow = String(vals[i][0]).replace(/'/g, '').replace(/^0+/, '') || '0';
+    if (idRow === idBusca) {
+      return json({
+        id: String(vals[i][0]).replace(/'/g, ''),
+        jogo1: String(vals[i][1] || ''), jogo2: String(vals[i][2] || ''), jogo3: String(vals[i][3] || ''),
+        data: vals[i][4] instanceof Date ? Utilities.formatDate(vals[i][4],'America/Sao_Paulo','yyyy-MM-dd') : String(vals[i][4] || ''),
+        status: String(vals[i][5] || ''),
+        tel: String(vals[i][6] || ''), cambista: String(vals[i][7] || '')
+      });
+    }
+  }
+  return json(null);
+}
+
+function getStatusBilhete(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const s = ss.getSheetByName('Bilhetes');
+  if (!s) return ok('NF');
+  var bBusca = String(e.parameter.bilhete || '').replace(/'/g, '').replace(/^0+/, '') || '0';
+  const vals = s.getDataRange().getValues();
+  for (var i = 1; i < vals.length; i++) {
+    var idRow = String(vals[i][0]).replace(/'/g, '').replace(/^0+/, '') || '0';
+    if (idRow === bBusca) {
+      var st = String(vals[i][5] || '').toUpperCase();
+      return ok(st.indexOf('PAGO') >= 0 ? 'PAGO' : 'PENDENTE');
+    }
+  }
+  return ok('NF');
+}
+// ===== FIM FUNCOES RESTAURADAS =====

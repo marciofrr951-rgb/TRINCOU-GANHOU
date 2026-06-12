@@ -198,6 +198,7 @@ table.board td { padding:8px; border-top:1px solid rgba(255,255,255,0.05); font-
 
   <!-- JOGAR -->
   <button class="btn-jogar-grande" onclick="abrirJogar()">🎱 FAZER MEU JOGO AGORA</button>
+  <button class="btn-jogar-grande" onclick="abrirMeusJogos()" style="background:linear-gradient(135deg,#3b9eff,#1e5fa8);box-shadow:0 8px 24px rgba(59,158,255,0.4);">🔎 MEUS JOGOS</button>
 
   <!-- RODADAS DISPONÍVEIS -->
   <div style="margin-bottom:32px;margin-top:32px;">
@@ -349,6 +350,16 @@ table.board td { padding:8px; border-top:1px solid rgba(255,255,255,0.05); font-
   </div>
 </div>
 
+<!-- MODAL MEUS JOGOS -->
+<div class="modal-bg" id="modalMeus">
+  <div class="modal">
+    <div class="modal-top"><h3>🔎 Meus Jogos</h3><button class="modal-close" onclick="fecharMeus()">×</button></div>
+    <div style="font-size:12px;color:var(--txt-dim);margin-bottom:12px;">Jogos feitos neste aparelho, com seus pontos atuais. 🍀</div>
+    <div id="meusJogosContent"></div>
+    <button class="btn-secondary" onclick="fecharMeus()">Fechar</button>
+  </div>
+</div>
+
 <!-- MODAL BILHETE -->
 <div class="modal-bg" id="modalBilhete" style="display:none;">
   <div class="modal" style="max-width:500px;max-height:90vh;overflow:auto;padding:0;">
@@ -421,11 +432,14 @@ async function carregarConfig() {
     var resp = await fetch('/script?acao=oito_rodadas_disponivel');
     var rodadas = await resp.json();
     if (Array.isArray(rodadas) && rodadas.length > 0) {
-      // Usa a PRIMEIRA rodada disponível e seu valor específico
-      var primeiraRodada = rodadas[0];
-      CONFIG.rodada = primeiraRodada.rodada || 1;
-      CONFIG.valorCota = primeiraRodada.valor || CONFIG.valorCota;
-      CONFIG.totalCotas = primeiraRodada.totalCotas || CONFIG.totalCotas;
+      // Usa a rodada selecionada (carrossel) ou a primeira disponível
+      var alvo = rodadas.filter(function(r){ return r.rodada === _rodadaSelecionada; })[0] || rodadas[0];
+      CONFIG.rodada = alvo.rodada || 1;
+      CONFIG.valorCota = alvo.valor || CONFIG.valorCota;
+      CONFIG.totalCotas = alvo.totalCotas || CONFIG.totalCotas;
+      // prêmios vêm calculados do backend (60% principal / 10% consolação)
+      if (alvo.premioPrincipal) CONFIG.premioPrincipal = alvo.premioPrincipal;
+      if (alvo.premioConsolacao) CONFIG.premioConsolacao = alvo.premioConsolacao;
     } else {
       // Fallback: busca config global (compatibilidade com versão antiga)
       var resp2 = await fetch('/script?acao=oito_status');
@@ -751,6 +765,8 @@ async function confirmarJogo() {
 
     if (data.erro) { erroModal(data.erro); btn.disabled=false; btn.innerHTML='Confirmar e pagar'; return; }
 
+    salvarMeuJogo(_rodadaSelecionada, data.cota, numerosStr, data.id);
+
     if (_metodo === 'dinheiro') {
       document.getElementById('cotaGeradaDin').textContent = '#' + String(data.cota).padStart(2,'0');
       document.getElementById('valorCotaDin').textContent = moeda(CONFIG.valorCota);
@@ -887,8 +903,50 @@ function iniciarPolling(id) {
   }, 5000);
 }
 
+// ════════ MEUS JOGOS (salvos neste aparelho) ════════
+function salvarMeuJogo(rodada, cota, numeros, id){
+  try {
+    var lista = JSON.parse(localStorage.getItem('meusJogos08')||'[]');
+    if (!lista.some(function(j){ return j.rodada===rodada && j.cota===cota; })) {
+      lista.push({rodada:rodada, cota:cota, numeros:numeros, id:id});
+      localStorage.setItem('meusJogos08', JSON.stringify(lista));
+    }
+  } catch(e){}
+}
+function fecharMeus(){ document.getElementById('modalMeus').classList.remove('open'); }
+async function abrirMeusJogos(){
+  var lista = [];
+  try { lista = JSON.parse(localStorage.getItem('meusJogos08')||'[]'); } catch(e){}
+  var cont = document.getElementById('meusJogosContent');
+  document.getElementById('modalMeus').classList.add('open');
+  if (!lista.length) { cont.innerHTML = '<div style="text-align:center;color:var(--txt-dim);padding:24px;">Você ainda não fez nenhum jogo neste aparelho.</div>'; return; }
+  cont.innerHTML = '<div class="board-loading"><span class="spinner"></span> Carregando…</div>';
+  var firstSeen = await carregarSorteados();
+  var board = [];
+  try { var resp = await fetch('/script?acao=oito_listar'); board = await resp.json(); } catch(e){}
+  function statusDe(rodada, cota){
+    var m = (board||[]).filter(function(c){ return Number(c.rodada)===Number(rodada) && Number(c.cota)===Number(cota); })[0];
+    return m ? String(m.status||'') : 'PENDENTE';
+  }
+  var html = '';
+  lista.slice().reverse().forEach(function(j){
+    var nums = String(j.numeros).split(/[-,\s]+/).map(function(n){return parseInt(n);}).filter(function(n){return !isNaN(n);});
+    var pts = 0;
+    var balls = nums.map(function(n){ var hit=(n in firstSeen); if(hit)pts++; return '<span class="num-cell'+(hit?' hit':'')+'" style="width:30px;height:30px;line-height:30px;">'+('0'+n).slice(-2)+'</span>'; }).join(' ');
+    var st = statusDe(j.rodada, j.cota), pago = st.toUpperCase().indexOf('PAGO')>=0;
+    html += '<div style="background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:14px;margin-bottom:10px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><strong>Rodada #'+String(j.rodada).padStart(3,'0')+' · Cota '+String(j.cota).padStart(2,'0')+'</strong>'
+      + '<span style="font-size:11px;font-weight:700;color:'+(pago?'var(--verde)':'#ffb020')+';">'+(pago?'✅ PAGO':'⏳ PENDENTE')+'</span></div>'
+      + '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">'+balls+'</div>'
+      + '<div style="font-size:13px;color:var(--txt-dim);">Pontos: <strong style="color:var(--gold);font-size:18px;">'+pts+'</strong> / 8'+(pts===8?' 🏆':'')+'</div>'
+      + '</div>';
+  });
+  cont.innerHTML = html;
+}
+
 // fecha modal ao clicar fora
 document.getElementById('modalJogar').addEventListener('click', function(e){ if (e.target === this) fecharJogar(); });
+document.getElementById('modalMeus').addEventListener('click', function(e){ if (e.target === this) fecharMeus(); });
 
 // init
 function proximaRodada() {

@@ -1,0 +1,120 @@
+// ===================== 08 DA SORTE =====================
+var OITO_RODADAS_ABA='OitoRodadas', OITO_ABA='OitoDaSorte', OITO_RESULTADOS_ABA='OitoResultados';
+var OITO_CAMBISTAS_ABA='Cambistas', OITO_CAMBISTA_COL_NOME=1, OITO_CAMBISTA_COL_PIN=2;
+var OITO_RODADAS_COLS=['Rodada','Valor','TotalCotas','Status','DataCriacao'];
+var OITO_COLS=['Rodada','Cota','ID','Nome','Telefone','Numeros','Status','Cambista','DataPag','DataCriacao'];
+var OITO_RES_COLS=['Data','Numeros','PublicadoEm'];
+var OITO_PCT_PRINCIPAL=0.60, OITO_PCT_CONSOLACAO=0.10;
+
+function handleOitoGet_(e){
+  var a=(e&&e.parameter&&e.parameter.acao)||'';
+  if(a==='oito_rodadas_disponivel')return oitoJson_(oitoRodadasAtivas_());
+  if(a==='oito_rodadas_admin')return oitoJson_(oitoRodadasAtivas_());
+  if(a==='oito_status')return oitoJson_(oitoStatus_());
+  if(a==='oito_resultado_listar')return oitoJson_(oitoResultadoListar_());
+  if(a==='oito_listar')return oitoJson_(oitoListar_(e.parameter));
+  if(a==='oito_verificarpin')return oitoText_(oitoVerificarPin_(e.parameter.pin));
+  if(a==='oito_statuscota')return oitoText_(oitoStatusCota_(e.parameter.id));
+  return null;
+}
+function handleOitoPost_(e){
+  var a=(e&&e.parameter&&e.parameter.acao)||'';
+  if(a==='oito_criar')return oitoJson_(oitoCriar_(e.parameter));
+  if(a==='oito_nova_rodada')return oitoJson_(oitoNovaRodada_(e.parameter));
+  if(a==='oito_deletar_rodada')return oitoText_(oitoDeletarRodada_(e.parameter));
+  if(a==='oito_resultado')return oitoJson_(oitoResultado_(e.parameter));
+  if(a==='oito_baixa')return oitoJson_(oitoBaixa_(e.parameter));
+  return null;
+}
+function oitoAba_(nome,cols){var ss=SpreadsheetApp.getActiveSpreadsheet();var sh=ss.getSheetByName(nome);if(!sh){sh=ss.insertSheet(nome);sh.getRange(1,1,1,cols.length).setValues([cols]).setFontWeight('bold');}return sh;}
+function oitoRodadasSheet_(){return oitoAba_(OITO_RODADAS_ABA,OITO_RODADAS_COLS);}
+function oitoCotasSheet_(){return oitoAba_(OITO_ABA,OITO_COLS);}
+function oitoResultadosSheet_(){return oitoAba_(OITO_RESULTADOS_ABA,OITO_RES_COLS);}
+function oitoPremios_(valor,total){var t=Number(valor)*Number(total);return{principal:Math.floor(t*OITO_PCT_PRINCIPAL),consolacao:Math.floor(t*OITO_PCT_CONSOLACAO)};}
+function oitoCotasPagas_(rod){var r=oitoCotasSheet_().getDataRange().getValues(),n=0;for(var i=1;i<r.length;i++){if(Number(r[i][0])===Number(rod)&&String(r[i][6]).toUpperCase().indexOf('PAGO')>=0)n++;}return n;}
+function oitoCotasTotalReservadas_(rod){var r=oitoCotasSheet_().getDataRange().getValues(),n=0;for(var i=1;i<r.length;i++){if(Number(r[i][0])===Number(rod))n++;}return n;}
+function oitoRodadasAtivas_(){
+  var rows=oitoRodadasSheet_().getDataRange().getValues(),out=[];
+  for(var i=1;i<rows.length;i++){
+    if(String(rows[i][3]||'').toLowerCase()==='deletada')continue;
+    var rod=Number(rows[i][0]),val=Number(rows[i][1])||0,tot=Number(rows[i][2])||0,pr=oitoPremios_(val,tot);
+    out.push({rodada:rod,valor:val,totalCotas:tot,cotasVendidas:oitoCotasPagas_(rod),premioPrincipal:pr.principal,premioConsolacao:pr.consolacao});
+  }
+  out.sort(function(a,b){return a.rodada-b.rodada;});return out;
+}
+function oitoNovaRodada_(p){
+  var val=Number(p.valor)||0,tot=Number(p.total)||0;
+  if(val<=0)return{erro:'Valor inválido.'};if(tot<=0)return{erro:'Total de cotas inválido.'};
+  var sh=oitoRodadasSheet_(),rows=sh.getDataRange().getValues(),max=0;
+  for(var i=1;i<rows.length;i++){if(Number(rows[i][0])>max)max=Number(rows[i][0]);}
+  var rod=max+1,ag=Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
+  sh.appendRow([rod,val,tot,'ativa',ag]);return{ok:true,rodada:rod};
+}
+function oitoDeletarRodada_(p){
+  var rod=Number(p.rodada);if(!rod)return'ERRO: rodada inválida';
+  var sh=oitoRodadasSheet_(),rows=sh.getDataRange().getValues();
+  for(var i=1;i<rows.length;i++){if(Number(rows[i][0])===rod){sh.getRange(i+1,4).setValue('deletada');return'OK';}}
+  return'ERRO: rodada não encontrada';
+}
+function oitoResultado_(p){
+  var num=String(p.numeros||'').trim();if(!num)return{erro:'Informe os números sorteados.'};
+  var hoje=Utilities.formatDate(new Date(),'America/Sao_Paulo','yyyy-MM-dd'),ag=Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
+  oitoResultadosSheet_().appendRow([hoje,num,ag]);return{ok:true};
+}
+function oitoResultadoListar_(){
+  var v=oitoResultadosSheet_().getDataRange().getValues(),out=[];
+  for(var i=1;i<v.length;i++){var d=v[i][0],ds=d instanceof Date?Utilities.formatDate(d,'America/Sao_Paulo','yyyy-MM-dd'):String(d);if(!v[i][1])continue;out.push({data:ds,numeros:String(v[i][1]||'')});}
+  out.sort(function(a,b){return String(b.data).localeCompare(String(a.data));});return out;
+}
+function oitoListar_(p){
+  var fr=p&&p.rodada?Number(p.rodada):null,ativas={};
+  oitoRodadasAtivas_().forEach(function(r){ativas[r.rodada]=true;});
+  var rows=oitoCotasSheet_().getDataRange().getValues(),out=[];
+  for(var i=1;i<rows.length;i++){var rod=Number(rows[i][0]);if(fr&&rod!==fr)continue;if(!fr&&!ativas[rod])continue;
+    out.push({rodada:rod,cota:rows[i][1],nome:String(rows[i][3]||''),numeros:String(rows[i][5]||''),status:String(rows[i][6]||'')});}
+  return out;
+}
+function oitoStatusCota_(id){
+  id=String(id||'').trim();if(!id)return'PENDENTE';
+  var rows=oitoCotasSheet_().getDataRange().getValues();
+  for(var i=1;i<rows.length;i++){if(String(rows[i][2]).trim()===id)return String(rows[i][6]).toUpperCase().indexOf('PAGO')>=0?'PAGO':'PENDENTE';}
+  return'PENDENTE';
+}
+function oitoCriar_(p){
+  var rod=Number(p.rodada),nome=String(p.nome||'').trim(),tel=String(p.telefone||'').replace(/\D/g,''),num=String(p.numeros||'').trim(),met=String(p.metodo||'pix').toLowerCase(),pin=String(p.pin||'').trim();
+  if(!rod)return{erro:'Rodada não selecionada.'};if(!nome)return{erro:'Informe seu nome.'};if(tel.length<10)return{erro:'WhatsApp inválido.'};
+  var nums=num.split(/[-,\s]+/).map(function(n){return parseInt(n,10);}).filter(function(n){return!isNaN(n);}),dist={};
+  for(var k=0;k<nums.length;k++){if(nums[k]<1||nums[k]>80)return{erro:'Números devem ser de 01 a 80.'};dist[nums[k]]=true;}
+  if(nums.length!==8||Object.keys(dist).length!==8)return{erro:'Escolha exatamente 8 números diferentes.'};
+  var rr=oitoRodadasSheet_().getDataRange().getValues(),tot=0,ok=false;
+  for(var r=1;r<rr.length;r++){if(Number(rr[r][0])===rod){if(String(rr[r][3]||'').toLowerCase()==='deletada')return{erro:'Esta rodada não está mais disponível.'};tot=Number(rr[r][2])||0;ok=true;break;}}
+  if(!ok)return{erro:'Rodada não encontrada.'};
+  var res=oitoCotasTotalReservadas_(rod);if(res>=tot)return{erro:'Todas as cotas desta rodada já foram preenchidas.'};
+  var cota=res+1,id='R'+rod+'C'+cota,ag=Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm'),status,camb,dp;
+  if(met==='dinheiro'){var nc=oitoVerificarPin_(pin);if(!nc)return{erro:'PIN do cambista inválido.'};status='PAGO DINHEIRO';camb=nc;dp=ag;}
+  else{status='PENDENTE';camb='ONLINE';dp='';}
+  var nf=nums.sort(function(a,b){return a-b;}).map(function(n){return('0'+n).slice(-2);}).join('-');
+  oitoCotasSheet_().appendRow([rod,cota,id,nome,tel,nf,status,camb,dp,ag]);
+  return{cota:cota,id:id,status:status};
+}
+function oitoBaixa_(p){
+  var id=String(p.id||'').trim();if(!id)return{erro:'id ausente'};
+  var sh=oitoCotasSheet_(),rows=sh.getDataRange().getValues();
+  for(var i=1;i<rows.length;i++){if(String(rows[i][2]).trim()===id){var l=i+1;sh.getRange(l,7).setValue('PAGO');if(!rows[i][8])sh.getRange(l,9).setValue(Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm'));if(p.telefone)sh.getRange(l,5).setValue(String(p.telefone));if(p.cambista)sh.getRange(l,8).setValue(String(p.cambista));return{ok:true};}}
+  return{erro:'cota não encontrada'};
+}
+function oitoStatus_(){
+  var at=oitoRodadasAtivas_();
+  if(at.length>0){var r=at[0];return{totalCotas:r.totalCotas,valorCota:r.valor,premioPrincipal:r.premioPrincipal,premioConsolacao:r.premioConsolacao,percOrganizador:30,dataInicio:'',rodada:r.rodada,cotasVendidas:r.cotasVendidas};}
+  return{totalCotas:100,valorCota:20,premioPrincipal:1200,premioConsolacao:200,percOrganizador:30,dataInicio:'',rodada:1,cotasVendidas:0};
+}
+function oitoVerificarPin_(pin){
+  pin=String(pin||'').trim();if(!pin)return'';
+  var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName(OITO_CAMBISTAS_ABA);if(!sh)return'';
+  var v=sh.getDataRange().getValues();
+  for(var i=1;i<v.length;i++){var pp=String(v[i][OITO_CAMBISTA_COL_PIN-1]||'').trim();if(pp&&pp===pin)return String(v[i][OITO_CAMBISTA_COL_NOME-1]||'Cambista').trim();}
+  return'';
+}
+function oitoJson_(o){return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);}
+function oitoText_(s){return ContentService.createTextOutput(String(s)).setMimeType(ContentService.MimeType.TEXT);}
+// =================== FIM 08 DA SORTE ===================
