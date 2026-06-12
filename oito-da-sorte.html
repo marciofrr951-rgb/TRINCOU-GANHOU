@@ -418,7 +418,7 @@ function passarAgeGate() {
 async function carregarConfig() {
   try {
     // Tenta buscar rodadas disponíveis (novas) com múltiplos valores
-    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_rodadas_disponivel');
+    var resp = await fetch('/script?acao=oito_rodadas_disponivel');
     var rodadas = await resp.json();
     if (Array.isArray(rodadas) && rodadas.length > 0) {
       // Usa a PRIMEIRA rodada disponível e seu valor específico
@@ -428,7 +428,7 @@ async function carregarConfig() {
       CONFIG.totalCotas = primeiraRodada.totalCotas || CONFIG.totalCotas;
     } else {
       // Fallback: busca config global (compatibilidade com versão antiga)
-      var resp2 = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_status');
+      var resp2 = await fetch('/script?acao=oito_status');
       var s = await resp2.json();
       if (s && typeof s === 'object') {
         CONFIG.totalCotas = s.totalCotas || CONFIG.totalCotas;
@@ -452,7 +452,7 @@ async function carregarConfig() {
 async function carregarSorteados() {
   var firstSeen = {}; // numero -> data da 1ª aparição
   try {
-    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_resultado_listar');
+    var resp = await fetch('/script?acao=oito_resultado_listar');
     var draws = await resp.json();
     if (Array.isArray(draws)) {
       draws.sort(function(a,b){ return String(a.data).localeCompare(String(b.data)); });
@@ -481,7 +481,7 @@ async function carregarQuadro() {
   var firstSeen = await carregarSorteados();
   var cotas = [];
   try {
-    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_listar');
+    var resp = await fetch('/script?acao=oito_listar');
     var dados = await resp.json();
     if (Array.isArray(dados)) cotas = dados;
   } catch(e) {}
@@ -589,7 +589,7 @@ async function abrirJogar() {
   
   // Busca rodadas disponíveis
   try {
-    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_rodadas_disponivel');
+    var resp = await fetch('/script?acao=oito_rodadas_disponivel');
     var rodadas = await resp.json();
     if (Array.isArray(rodadas) && rodadas.length > 0) {
       // Armazena rodadas no dataset para usar depois
@@ -718,7 +718,7 @@ async function confirmarJogo() {
   // Se for dinheiro, valida PIN e pega nome do cambista
   if (_metodo === 'dinheiro') {
     try {
-      var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_verificarpin&pin=' + encodeURIComponent(pin));
+      var resp = await fetch('/script?acao=oito_verificarpin&pin=' + encodeURIComponent(pin));
       var cambistaValidado = (await resp.text()).trim();
       if (!cambistaValidado || cambistaValidado === '') {
         return erroModal('PIN do cambista inválido.');
@@ -746,7 +746,7 @@ async function confirmarJogo() {
       metodo: _metodo,
       pin: _metodo === 'dinheiro' ? pin : ''
     });
-    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec', { method:'POST', body: body });
+    var resp = await fetch('/script', { method:'POST', body: body });
     var data = await resp.json();
 
     if (data.erro) { erroModal(data.erro); btn.disabled=false; btn.innerHTML='Confirmar e pagar'; return; }
@@ -875,7 +875,7 @@ function iniciarPolling(id) {
     tentativas++;
     if (tentativas > 60) { clearInterval(_pollTimer); document.getElementById('pixPollMsg').textContent = 'Link expirado. Gere um novo PIX se necessário.'; return; }
     try {
-      var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_statuscota&id=' + encodeURIComponent(id));
+      var resp = await fetch('/script?acao=oito_statuscota&id=' + encodeURIComponent(id));
       var txt = (await resp.text()).trim();
       if (txt === 'PAGO') {
         clearInterval(_pollTimer);
@@ -944,7 +944,7 @@ function validarTelefoneQuadro() {
 }
 
 function carregarRodasDisponiveis() {
-  fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_rodadas_disponivel')
+  fetch('/script?acao=oito_rodadas_disponivel')
     .then(r => r.json())
     .then(rodadas => {
       var html = '';
@@ -974,7 +974,7 @@ function carregarRodasDisponiveis() {
 carregarQuadro();
 // Carrega rodadas para o carousel
 (function() {
-  fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec?acao=oito_rodadas_disponivel')
+  fetch('/script?acao=oito_rodadas_disponivel')
     .then(r => r.json())
     .then(rodadas => {
       _rodasDisponiveis = rodadas || [];

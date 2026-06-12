@@ -1,131 +1,188 @@
 /*════════════════════════════════════════════════════════════════════════
-  08 DA SORTE — Código para adicionar ao seu Apps Script existente
-  (o mesmo projeto/planilha que o Trincou Ganhou já usa)
+  08 DA SORTE — Código para o seu Apps Script (mesma planilha do Trincou)
 
   COMO INSTALAR:
-  1) Abra seu projeto do Apps Script (Extensões > Apps Script na planilha).
-  2) Cole TODO este arquivo no final do seu Código.gs.
-  3) No início da sua função doGet(e) já existente, adicione na 1ª linha:
-        var _o = handleOitoGet_(e); if (_o) return _o;
-  4) No início da sua função doPost(e) já existente, adicione na 1ª linha:
+  1) Extensões > Apps Script na planilha.
+  2) Cole TODO este arquivo no FINAL do seu Código.gs (não apague o resto).
+  3) No início da função doGet(e), tenha esta linha:
+        var _o = handleOitoGet_(e);  if (_o) return _o;
+  4) No início da função doPost(e), tenha esta linha:
         var _o = handleOitoPost_(e); if (_o) return _o;
-  5) Salve e faça "Implantar > Gerenciar implantações > Editar > Nova versão".
-     (Não precisa mudar a URL — o site continua usando a mesma.)
+  5) Salve e Implantar > Gerenciar implantações > Editar > Nova versão.
 
-  Ele cria sozinho as abas "OitoDaSorte" e "OitoConfig" na 1ª vez que rodar.
+  Cria sozinho as abas: OitoRodadas, OitoDaSorte, OitoResultados.
 ════════════════════════════════════════════════════════════════════════*/
 
-// ── Ajuste se sua aba de cambistas tiver outro nome/colunas ──
-var OITO_ABA          = 'OitoDaSorte';
-var OITO_CONFIG_ABA   = 'OitoConfig';
-var OITO_CAMBISTAS_ABA = 'Cambistas'; // aba onde ficam os PINs dos cambistas
-var OITO_CAMBISTA_COL_NOME = 1;       // coluna do NOME do cambista (A = 1)
-var OITO_CAMBISTA_COL_PIN  = 2;       // coluna do PIN do cambista   (B = 2)
+var OITO_RODADAS_ABA    = 'OitoRodadas';
+var OITO_ABA            = 'OitoDaSorte';
+var OITO_RESULTADOS_ABA = 'OitoResultados';
+var OITO_CAMBISTAS_ABA  = 'Cambistas'; // aba dos PINs (a mesma do Trincou)
+var OITO_CAMBISTA_COL_NOME = 1;        // coluna do NOME (A=1)
+var OITO_CAMBISTA_COL_PIN  = 2;        // coluna do PIN (B=2)
 
-// Colunas da aba OitoDaSorte (não precisa mexer)
-var OITO_COLS = ['Rodada','Cota','ID','Nome','Telefone','Numeros','Status','Cambista','DataPag','DataCriacao'];
+var OITO_RODADAS_COLS = ['Rodada', 'Valor', 'TotalCotas', 'Status', 'DataCriacao'];
+var OITO_COLS         = ['Rodada', 'Cota', 'ID', 'Nome', 'Telefone', 'Numeros', 'Status', 'Cambista', 'DataPag', 'DataCriacao'];
+var OITO_RES_COLS     = ['Data', 'Numeros', 'PublicadoEm'];
 
-/*──────────────── ROTEADORES (chamados pelo seu doGet/doPost) ───────────*/
+// % da premiação (60% pro 1º lugar, 10% pra menor pontuação)
+var OITO_PCT_PRINCIPAL  = 0.60;
+var OITO_PCT_CONSOLACAO = 0.10;
+
+/*──────────────── ROTEADORES ────────────────────────────────────────────*/
 function handleOitoGet_(e) {
   var acao = (e && e.parameter && e.parameter.acao) || '';
-  if (acao === 'oito_status')     return oitoJson_(oitoStatus_());
-  if (acao === 'oito_listar')     return oitoJson_(oitoListar_());
-  if (acao === 'oito_statuscota') return oitoText_(oitoStatusCota_(e.parameter.id));
-  return null; // não é ação do 08 da Sorte → deixa seu doGet seguir normal
+  if (acao === 'oito_rodadas_disponivel') return oitoJson_(oitoRodadasAtivas_());
+  if (acao === 'oito_rodadas_admin')      return oitoJson_(oitoRodadasAtivas_());
+  if (acao === 'oito_status')             return oitoJson_(oitoStatus_());
+  if (acao === 'oito_resultado_listar')   return oitoJson_(oitoResultadoListar_());
+  if (acao === 'oito_listar')             return oitoJson_(oitoListar_(e.parameter));
+  if (acao === 'oito_verificarpin')       return oitoText_(oitoVerificarPin_(e.parameter.pin));
+  if (acao === 'oito_statuscota')         return oitoText_(oitoStatusCota_(e.parameter.id));
+  return null;
 }
 
 function handleOitoPost_(e) {
   var acao = (e && e.parameter && e.parameter.acao) || '';
-  if (acao === 'oito_criar') return oitoJson_(oitoCriar_(e.parameter));
-  if (acao === 'oito_baixa') return oitoJson_(oitoBaixa_(e.parameter));
+  if (acao === 'oito_criar')          return oitoJson_(oitoCriar_(e.parameter));
+  if (acao === 'oito_nova_rodada')    return oitoJson_(oitoNovaRodada_(e.parameter));
+  if (acao === 'oito_deletar_rodada') return oitoText_(oitoDeletarRodada_(e.parameter));
+  if (acao === 'oito_resultado')      return oitoJson_(oitoResultado_(e.parameter));
+  if (acao === 'oito_baixa')          return oitoJson_(oitoBaixa_(e.parameter)); // webhook PIX
   return null;
 }
 
-/*──────────────── PLANILHA / CONFIG ─────────────────────────────────────*/
-function oitoSheet_() {
+/*──────────────── PLANILHAS ─────────────────────────────────────────────*/
+function oitoAba_(nome, cols) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName(OITO_ABA);
+  var sh = ss.getSheetByName(nome);
   if (!sh) {
-    sh = ss.insertSheet(OITO_ABA);
-    sh.getRange(1, 1, 1, OITO_COLS.length).setValues([OITO_COLS]).setFontWeight('bold');
+    sh = ss.insertSheet(nome);
+    sh.getRange(1, 1, 1, cols.length).setValues([cols]).setFontWeight('bold');
   }
   return sh;
 }
+function oitoRodadasSheet_()    { return oitoAba_(OITO_RODADAS_ABA, OITO_RODADAS_COLS); }
+function oitoCotasSheet_()      { return oitoAba_(OITO_ABA, OITO_COLS); }
+function oitoResultadosSheet_() { return oitoAba_(OITO_RESULTADOS_ABA, OITO_RES_COLS); }
 
-function oitoConfigSheet_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName(OITO_CONFIG_ABA);
-  if (!sh) {
-    sh = ss.insertSheet(OITO_CONFIG_ABA);
-    sh.getRange(1, 1, 1, 2).setValues([['chave', 'valor']]).setFontWeight('bold');
-    // valores padrão (ajuste na planilha quando quiser)
-    var def = [
-      ['totalCotas', 100],
-      ['valorCota', 20],
-      ['premioPrincipal', 1200],
-      ['premioConsolacao', 200],
-      ['percOrganizador', 20],
-      ['dataInicio', ''],   // formato AAAA-MM-DD — defina ao abrir a rodada
-      ['rodada', 1],
-    ];
-    sh.getRange(2, 1, def.length, 2).setValues(def);
-  }
-  return sh;
-}
-
-function oitoConfig_() {
-  var sh = oitoConfigSheet_();
-  var vals = sh.getDataRange().getValues();
-  var cfg = {};
-  for (var i = 1; i < vals.length; i++) {
-    var k = String(vals[i][0] || '').trim();
-    if (k) cfg[k] = vals[i][1];
-  }
-  // normaliza dataInicio (pode vir como Date)
-  if (cfg.dataInicio instanceof Date) {
-    cfg.dataInicio = Utilities.formatDate(cfg.dataInicio, 'America/Sao_Paulo', 'yyyy-MM-dd');
-  } else {
-    cfg.dataInicio = String(cfg.dataInicio || '').trim();
-  }
+function oitoPremios_(valor, totalCotas) {
+  var total = Number(valor) * Number(totalCotas);
   return {
-    totalCotas: Number(cfg.totalCotas) || 100,
-    valorCota: Number(cfg.valorCota) || 20,
-    premioPrincipal: Number(cfg.premioPrincipal) || 1200,
-    premioConsolacao: Number(cfg.premioConsolacao) || 200,
-    percOrganizador: Number(cfg.percOrganizador) || 0,
-    dataInicio: cfg.dataInicio,
-    rodada: Number(cfg.rodada) || 1,
+    principal: Math.floor(total * OITO_PCT_PRINCIPAL),
+    consolacao: Math.floor(total * OITO_PCT_CONSOLACAO),
   };
 }
 
-/*──────────────── AÇÕES ─────────────────────────────────────────────────*/
-function oitoStatus_() {
-  var cfg = oitoConfig_();
-  var rows = oitoSheet_().getDataRange().getValues();
-  var pagas = 0;
+// Conta cotas PAGAS de uma rodada
+function oitoCotasPagas_(rodada) {
+  var rows = oitoCotasSheet_().getDataRange().getValues();
+  var n = 0;
   for (var i = 1; i < rows.length; i++) {
-    if (Number(rows[i][0]) === cfg.rodada && String(rows[i][6]).toUpperCase().indexOf('PAGO') >= 0) pagas++;
+    if (Number(rows[i][0]) === Number(rodada) && String(rows[i][6]).toUpperCase().indexOf('PAGO') >= 0) n++;
   }
-  return {
-    totalCotas: cfg.totalCotas,
-    valorCota: cfg.valorCota,
-    premioPrincipal: cfg.premioPrincipal,
-    premioConsolacao: cfg.premioConsolacao,
-    percOrganizador: cfg.percOrganizador,
-    dataInicio: cfg.dataInicio,
-    rodada: cfg.rodada,
-    cotasVendidas: pagas,
-  };
+  return n;
+}
+// Conta TODAS as cotas de uma rodada (pagas + pendentes) — para numerar a próxima
+function oitoCotasTotalReservadas_(rodada) {
+  var rows = oitoCotasSheet_().getDataRange().getValues();
+  var n = 0;
+  for (var i = 1; i < rows.length; i++) { if (Number(rows[i][0]) === Number(rodada)) n++; }
+  return n;
 }
 
-// Lista pública — NÃO inclui telefone (privacidade)
-function oitoListar_() {
-  var cfg = oitoConfig_();
-  var rows = oitoSheet_().getDataRange().getValues();
+/*──────────────── RODADAS ───────────────────────────────────────────────*/
+function oitoRodadasAtivas_() {
+  var rows = oitoRodadasSheet_().getDataRange().getValues();
   var out = [];
   for (var i = 1; i < rows.length; i++) {
-    if (Number(rows[i][0]) !== cfg.rodada) continue;
+    var status = String(rows[i][3] || '').toLowerCase();
+    if (status === 'deletada') continue;
+    var rodada = Number(rows[i][0]);
+    var valor = Number(rows[i][1]) || 0;
+    var totalCotas = Number(rows[i][2]) || 0;
+    var pr = oitoPremios_(valor, totalCotas);
     out.push({
+      rodada: rodada,
+      valor: valor,
+      totalCotas: totalCotas,
+      cotasVendidas: oitoCotasPagas_(rodada),
+      premioPrincipal: pr.principal,
+      premioConsolacao: pr.consolacao,
+    });
+  }
+  out.sort(function (a, b) { return a.rodada - b.rodada; });
+  return out;
+}
+
+function oitoNovaRodada_(p) {
+  var valor = Number(p.valor) || 0;
+  var total = Number(p.total) || 0;
+  if (valor <= 0) return { erro: 'Valor inválido.' };
+  if (total <= 0) return { erro: 'Total de cotas inválido.' };
+
+  var sh = oitoRodadasSheet_();
+  var rows = sh.getDataRange().getValues();
+  var maxR = 0;
+  for (var i = 1; i < rows.length; i++) { if (Number(rows[i][0]) > maxR) maxR = Number(rows[i][0]); }
+  var rodada = maxR + 1;
+  var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+  sh.appendRow([rodada, valor, total, 'ativa', agora]);
+  return { ok: true, rodada: rodada };
+}
+
+function oitoDeletarRodada_(p) {
+  var rodada = Number(p.rodada);
+  if (!rodada) return 'ERRO: rodada inválida';
+  var sh = oitoRodadasSheet_();
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (Number(rows[i][0]) === rodada) {
+      sh.getRange(i + 1, 4).setValue('deletada'); // Status
+      return 'OK';
+    }
+  }
+  return 'ERRO: rodada não encontrada';
+}
+
+/*──────────────── RESULTADOS (globais — valem p/ todas as rodadas) ───────*/
+function oitoResultado_(p) {
+  var numeros = String(p.numeros || '').trim();
+  if (!numeros) return { erro: 'Informe os números sorteados.' };
+  var hoje = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+  oitoResultadosSheet_().appendRow([hoje, numeros, agora]);
+  return { ok: true };
+}
+
+function oitoResultadoListar_() {
+  var vals = oitoResultadosSheet_().getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < vals.length; i++) {
+    var d = vals[i][0];
+    var ds = d instanceof Date ? Utilities.formatDate(d, 'America/Sao_Paulo', 'yyyy-MM-dd') : String(d);
+    if (!vals[i][1]) continue;
+    out.push({ data: ds, numeros: String(vals[i][1] || '') });
+  }
+  out.sort(function (a, b) { return String(b.data).localeCompare(String(a.data)); });
+  return out;
+}
+
+/*──────────────── COTAS ─────────────────────────────────────────────────*/
+// Quadro público — sem telefone. Aceita ?rodada= opcional.
+function oitoListar_(p) {
+  var filtroRodada = p && p.rodada ? Number(p.rodada) : null;
+  // rodadas ativas (para esconder cotas de rodadas deletadas)
+  var ativas = {};
+  oitoRodadasAtivas_().forEach(function (r) { ativas[r.rodada] = true; });
+
+  var rows = oitoCotasSheet_().getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < rows.length; i++) {
+    var rod = Number(rows[i][0]);
+    if (filtroRodada && rod !== filtroRodada) continue;
+    if (!filtroRodada && !ativas[rod]) continue;
+    out.push({
+      rodada: rod,
       cota: rows[i][1],
       nome: String(rows[i][3] || ''),
       numeros: String(rows[i][5] || ''),
@@ -138,7 +195,7 @@ function oitoListar_() {
 function oitoStatusCota_(id) {
   id = String(id || '').trim();
   if (!id) return 'PENDENTE';
-  var rows = oitoSheet_().getDataRange().getValues();
+  var rows = oitoCotasSheet_().getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
     if (String(rows[i][2]).trim() === id) {
       return String(rows[i][6]).toUpperCase().indexOf('PAGO') >= 0 ? 'PAGO' : 'PENDENTE';
@@ -148,13 +205,14 @@ function oitoStatusCota_(id) {
 }
 
 function oitoCriar_(p) {
-  var cfg = oitoConfig_();
+  var rodada = Number(p.rodada);
   var nome = String(p.nome || '').trim();
   var telefone = String(p.telefone || '').replace(/\D/g, '');
   var numeros = String(p.numeros || '').trim();
   var metodo = String(p.metodo || 'pix').toLowerCase();
   var pin = String(p.pin || '').trim();
 
+  if (!rodada) return { erro: 'Rodada não selecionada.' };
   if (!nome) return { erro: 'Informe seu nome.' };
   if (telefone.length < 10) return { erro: 'WhatsApp inválido.' };
 
@@ -167,47 +225,51 @@ function oitoCriar_(p) {
   }
   if (nums.length !== 8 || Object.keys(distintos).length !== 8) return { erro: 'Escolha exatamente 8 números diferentes.' };
 
-  var sh = oitoSheet_();
-  var rows = sh.getDataRange().getValues();
-  var naRodada = 0;
-  for (var i = 1; i < rows.length; i++) { if (Number(rows[i][0]) === cfg.rodada) naRodada++; }
-  if (naRodada >= cfg.totalCotas) return { erro: 'Todas as cotas desta rodada já foram preenchidas.' };
+  // confere se a rodada existe e está ativa, e pega o total de cotas
+  var rrows = oitoRodadasSheet_().getDataRange().getValues();
+  var totalCotas = 0, achou = false;
+  for (var r = 1; r < rrows.length; r++) {
+    if (Number(rrows[r][0]) === rodada) {
+      if (String(rrows[r][3] || '').toLowerCase() === 'deletada') return { erro: 'Esta rodada não está mais disponível.' };
+      totalCotas = Number(rrows[r][2]) || 0;
+      achou = true;
+      break;
+    }
+  }
+  if (!achou) return { erro: 'Rodada não encontrada.' };
 
-  var cota = naRodada + 1;
-  var id = 'R' + cfg.rodada + 'C' + cota;
+  var reservadas = oitoCotasTotalReservadas_(rodada);
+  if (reservadas >= totalCotas) return { erro: 'Todas as cotas desta rodada já foram preenchidas.' };
+
+  var cota = reservadas + 1;
+  var id = 'R' + rodada + 'C' + cota;
   var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
 
   var status, cambista, dataPag;
   if (metodo === 'dinheiro') {
     var nomeCambista = oitoVerificarPin_(pin);
     if (!nomeCambista) return { erro: 'PIN do cambista inválido.' };
-    status = 'PAGO DINHEIRO';
-    cambista = nomeCambista;
-    dataPag = agora;
+    status = 'PAGO DINHEIRO'; cambista = nomeCambista; dataPag = agora;
   } else {
-    status = 'PENDENTE';
-    cambista = 'ONLINE';
-    dataPag = '';
+    status = 'PENDENTE'; cambista = 'ONLINE'; dataPag = '';
   }
 
-  // ordena os números pra exibir bonito (05-12-17-...)
   var numerosFmt = nums.sort(function (a, b) { return a - b; }).map(function (n) { return ('0' + n).slice(-2); }).join('-');
-
-  sh.appendRow([cfg.rodada, cota, id, nome, telefone, numerosFmt, status, cambista, dataPag, agora]);
+  oitoCotasSheet_().appendRow([rodada, cota, id, nome, telefone, numerosFmt, status, cambista, dataPag, agora]);
   return { cota: cota, id: id, status: status };
 }
 
-// Chamado pelo webhook do Mercado Pago quando o PIX é aprovado
+// Baixa do PIX (chamada pelo webhook do Mercado Pago)
 function oitoBaixa_(p) {
   var id = String(p.id || '').trim();
   if (!id) return { erro: 'id ausente' };
-  var sh = oitoSheet_();
+  var sh = oitoCotasSheet_();
   var rows = sh.getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
     if (String(rows[i][2]).trim() === id) {
       var linha = i + 1;
-      sh.getRange(linha, 7).setValue('PAGO'); // Status
-      if (!rows[i][8]) sh.getRange(linha, 9).setValue(Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')); // DataPag
+      sh.getRange(linha, 7).setValue('PAGO');
+      if (!rows[i][8]) sh.getRange(linha, 9).setValue(Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'));
       if (p.telefone) sh.getRange(linha, 5).setValue(String(p.telefone));
       if (p.cambista) sh.getRange(linha, 8).setValue(String(p.cambista));
       return { ok: true };
@@ -216,7 +278,21 @@ function oitoBaixa_(p) {
   return { erro: 'cota não encontrada' };
 }
 
-// Verifica o PIN na aba de cambistas. Retorna o nome do cambista ou '' se inválido.
+// Compatibilidade: status "legado" (1ª rodada ativa) usado como fallback no site
+function oitoStatus_() {
+  var ativas = oitoRodadasAtivas_();
+  if (ativas.length > 0) {
+    var r = ativas[0];
+    return {
+      totalCotas: r.totalCotas, valorCota: r.valor,
+      premioPrincipal: r.premioPrincipal, premioConsolacao: r.premioConsolacao,
+      percOrganizador: 30, dataInicio: '', rodada: r.rodada, cotasVendidas: r.cotasVendidas,
+    };
+  }
+  return { totalCotas: 100, valorCota: 20, premioPrincipal: 1200, premioConsolacao: 200, percOrganizador: 30, dataInicio: '', rodada: 1, cotasVendidas: 0 };
+}
+
+// Verifica o PIN na aba de cambistas → nome do cambista ou '' (inválido)
 function oitoVerificarPin_(pin) {
   pin = String(pin || '').trim();
   if (!pin) return '';
@@ -225,8 +301,8 @@ function oitoVerificarPin_(pin) {
   if (!sh) return '';
   var vals = sh.getDataRange().getValues();
   for (var i = 1; i < vals.length; i++) {
-    var p = String(vals[i][OITO_CAMBISTA_COL_PIN - 1] || '').trim();
-    if (p && p === pin) return String(vals[i][OITO_CAMBISTA_COL_NOME - 1] || 'Cambista').trim();
+    var pp = String(vals[i][OITO_CAMBISTA_COL_PIN - 1] || '').trim();
+    if (pp && pp === pin) return String(vals[i][OITO_CAMBISTA_COL_NOME - 1] || 'Cambista').trim();
   }
   return '';
 }
