@@ -809,14 +809,27 @@ function contarPontos(numerosStr, firstSeen) {
   var p = 0; nums.forEach(function(n){ if (n in firstSeen) p++; }); return p;
 }
 
-// Calcula o status de um bolão: FINALIZADO (tem ganhador) / EM ANDAMENTO (lotado) / EM ABERTO
-function statusDoBolao(rod, boloes, todasCotas, firstSeen) {
+// Monta o "firstSeen" só com resultados a partir da data de ativação (yyyy-MM-dd).
+// Sem data de ativação → nada conta (bolão ainda não iniciado).
+function firstSeenDesde(resultados, desdeISO) {
+  var fs = {};
+  if (!desdeISO) return fs;
+  (resultados||[]).slice().sort(function(a,b){ return String(a.data).localeCompare(String(b.data)); }).forEach(function(r){
+    if (String(r.data) < String(desdeISO)) return;
+    String(r.numeros||'').split(/[-,\s]+/).forEach(function(n){ var num=parseInt(n); if(!isNaN(num) && !(num in fs)) fs[num]=r.data; });
+  });
+  return fs;
+}
+
+// Status do bolão: EM ABERTO (não ativado) / EM ANDAMENTO (ativado) / FINALIZADO (tem ganhador)
+function statusDoBolao(rod, boloes, todasCotas, resultados) {
   var info = (boloes||[]).filter(function(b){ return Number(b.rodada)===Number(rod); })[0] || {};
+  if (!info.dataAtivacao) return { txt:'EM ABERTO', cor:'#4ade4a' };
+  var fs = firstSeenDesde(resultados, info.dataAtivacao);
   var cotasBolao = (todasCotas||[]).filter(function(c){ return Number(c.rodada)===Number(rod) && String(c.status||'').toUpperCase().indexOf('PAGO')>=0; });
-  var temGanhador = cotasBolao.some(function(c){ return contarPontos(c.numeros, firstSeen) === 8; });
+  var temGanhador = cotasBolao.some(function(c){ return contarPontos(c.numeros, fs) === 8; });
   if (temGanhador) return { txt:'FINALIZADO', cor:'#ff6b6b' };
-  if (info.totalCotas && info.cotasVendidas >= info.totalCotas) return { txt:'EM ANDAMENTO', cor:'#3b9eff' };
-  return { txt:'EM ABERTO', cor:'#4ade4a' };
+  return { txt:'EM ANDAMENTO', cor:'#3b9eff' };
 }
 
 async function consultarBoloes() {
@@ -829,7 +842,7 @@ async function consultarBoloes() {
     var meus = await fetch('/script?acao=oito_meus&telefone=' + encodeURIComponent(tel)).then(function(r){return r.json();});
     var boloes = await fetch('/script?acao=oito_rodadas_disponivel').then(function(r){return r.json();});
     var todas = await fetch('/script?acao=oito_listar').then(function(r){return r.json();});
-    var firstSeen = await carregarSorteados();
+    var resultados = await fetch('/script?acao=oito_resultado_listar').then(function(r){return r.json();}).catch(function(){return [];});
 
     var pagas = (meus||[]).filter(function(c){ return String(c.status||'').toUpperCase().indexOf('PAGO')>=0; });
     if (pagas.length === 0) { box.innerHTML = '<p style="color:#ff6b6b;">❌ Nenhum bolão pago encontrado para este WhatsApp.</p>'; return; }
@@ -849,12 +862,12 @@ async function consultarBoloes() {
     pagas.forEach(function(c){ (grupos[c.rodada] = grupos[c.rodada]||[]).push(c); });
     Object.keys(grupos).sort(function(a,b){return a-b;}).forEach(function(rod){
       var info = (boloes||[]).filter(function(b){ return Number(b.rodada)===Number(rod); })[0] || {};
-      var st = statusDoBolao(rod, boloes, todas, firstSeen);
+      var st = statusDoBolao(rod, boloes, todas, resultados);
       html += '<div style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:14px;margin-bottom:10px;flex-wrap:wrap;">'
         + '<div style="width:58px;height:58px;border-radius:50%;border:2px solid var(--roxo);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:8px;color:var(--txt-dim);">BOLÃO</span><span style="font-weight:900;color:var(--roxo-claro);font-size:15px;">#'+String(rod).padStart(2,'0')+'</span></div>'
         + '<div style="font-size:12px;line-height:1.5;"><span style="color:var(--txt-dim);">Cota</span> <b style="color:var(--roxo-claro);">'+moeda(info.valor||0)+'</b><br><span style="color:var(--txt-dim);">Prêmio total</span> <b style="color:var(--verde);">'+moeda(info.premioPrincipal||0)+'</b></div>'
         + '<div style="text-align:center;font-size:11px;color:var(--txt-dim);"><div style="font-size:22px;font-weight:900;color:#fff;">'+String(grupos[rod].length).padStart(2,'0')+'</div>Cota(s)</div>'
-        + '<div style="font-size:12px;line-height:1.5;"><span style="color:var(--txt-dim);">Status</span> <b style="color:'+st.cor+';">'+st.txt+'</b><br><span style="color:var(--txt-dim);">Início</span> <b>'+(info.dataInicio||'—')+'</b></div>'
+        + '<div style="font-size:12px;line-height:1.5;"><span style="color:var(--txt-dim);">Status</span> <b style="color:'+st.cor+';">'+st.txt+'</b><br><span style="color:var(--txt-dim);">Início</span> <b>'+(info.dataAtivacao?info.dataAtivacao.split('-').reverse().join('/'):'não iniciado')+'</b></div>'
         + '<button onclick="abrirAcompanhar('+rod+')" style="margin-left:auto;padding:10px 14px;background:rgba(124,58,237,0.2);border:1px solid var(--roxo);color:var(--roxo-claro);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;">🏆 ACOMPANHAR</button>'
         + '</div>';
     });
@@ -910,13 +923,13 @@ async function abrirAcompanhar(rod) {
     var boloes = await fetch('/script?acao=oito_rodadas_disponivel').then(function(r){return r.json();});
     var cotas = await fetch('/script?acao=oito_listar&rodada=' + rod).then(function(r){return r.json();});
     _acompRes = (await fetch('/script?acao=oito_resultado_listar').then(function(r){return r.json();})) || [];
-    var firstSeen = await carregarSorteados();
     var meus = tel ? (await fetch('/script?acao=oito_meus&telefone=' + encodeURIComponent(tel)).then(function(r){return r.json();})) : [];
 
     var info = (boloes||[]).filter(function(b){return Number(b.rodada)===Number(rod);})[0] || {};
     _acompInfo = info;
+    var firstSeen = firstSeenDesde(_acompRes, info.dataAtivacao); // pontos só a partir da ativação
     var pagas = (cotas||[]).filter(function(c){ return String(c.status||'').toUpperCase().indexOf('PAGO')>=0; });
-    var st = statusDoBolao(rod, boloes, cotas, firstSeen);
+    var st = statusDoBolao(rod, boloes, cotas, _acompRes);
     _acompMinhas = (meus||[]).filter(function(c){ return Number(c.rodada)===Number(rod) && String(c.status||'').toUpperCase().indexOf('PAGO')>=0; });
 
     document.getElementById('acompTopo').innerHTML =
@@ -924,7 +937,7 @@ async function abrirAcompanhar(rod) {
       + '<div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--roxo);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:9px;color:var(--txt-dim);">BOLÃO</span><span style="font-weight:900;color:var(--roxo-claro);">#'+String(rod).padStart(2,'0')+'</span></div>'
       + '<div style="font-size:13px;line-height:1.6;"><span style="color:var(--txt-dim);">Cota</span> <b style="color:var(--roxo-claro);">'+moeda(info.valor||0)+'</b><br><span style="color:var(--txt-dim);">Prêmio total</span> <b style="color:var(--verde);">'+moeda(info.premioPrincipal||0)+'</b></div>'
       + '<div style="text-align:center;font-size:11px;color:var(--txt-dim);"><div style="font-size:22px;font-weight:900;color:#fff;">'+String(_acompMinhas.length).padStart(2,'0')+'</div>Cotas registradas</div>'
-      + '<div style="font-size:13px;line-height:1.6;"><span style="color:var(--txt-dim);">Status</span> <b style="color:'+st.cor+';">'+st.txt+'</b><br><span style="color:var(--txt-dim);">Início</span> <b>'+(info.dataInicio||'—')+'</b></div>'
+      + '<div style="font-size:13px;line-height:1.6;"><span style="color:var(--txt-dim);">Status</span> <b style="color:'+st.cor+';">'+st.txt+'</b><br><span style="color:var(--txt-dim);">Início</span> <b>'+(info.dataAtivacao?info.dataAtivacao.split('-').reverse().join('/'):'não iniciado')+'</b></div>'
       + '</div>';
 
     if (_acompMinhas.length) {

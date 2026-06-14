@@ -433,8 +433,8 @@ async function carregarRodadas() {
         html += `
           <div class="rodada-card">
             <div class="rodada-header">
-              <div class="rodada-titulo">Rodada #${r.rodada}</div>
-              <div class="rodada-status">Ativa</div>
+              <div class="rodada-titulo">Bolão #${r.rodada}</div>
+              <div class="rodada-status" style="background:${r.ativado?'rgba(74,222,74,0.2)':'rgba(255,255,255,0.1)'};color:${r.ativado?'var(--verde)':'rgba(255,255,255,0.5)'};">${r.ativado ? '✅ ATIVO' : '⏸️ NÃO ATIVADO'}</div>
             </div>
             <div class="rodada-info">
               <span class="rodada-info-label">Valor:</span>
@@ -518,14 +518,26 @@ async function atualizarPremiacao() {
 
 async function iniciarRodadaAdmin() {
   var rodada = document.getElementById('rodadaSelect').value;
-  var data = document.getElementById('dataInicio').value;
-  
+  var data = document.getElementById('dataInicio').value; // yyyy-MM-ddTHH:mm
   if (!rodada) return mostrarMsg('Selecione uma rodada', 'error');
   if (!data) return mostrarMsg('Defina a data de início', 'error');
-  
-  localStorage.setItem('rodada_ativa', rodada);
-  localStorage.setItem('rodada_data_inicio', data);
-  mostrarMsg('✓ Rodada ' + rodada + ' iniciada em ' + data, 'success');
+  var senha = getSenha();
+  if (!senha) return mostrarMsg('Digite a senha do admin no topo', 'error');
+  try {
+    var resp = await fetch('/script', {
+      method: 'POST',
+      body: new URLSearchParams({ acao: 'oito_ativar_rodada', rodada: rodada, data: data, senha: senha })
+    });
+    var d = await resp.json();
+    if (d && d.ok) {
+      mostrarMsg('✓ Bolão #' + rodada + ' ativado! A partir de ' + (d.dataAtivacao || data) + ' os resultados contam pontos só dele.', 'success');
+      setTimeout(carregarRodadas, 1500);
+    } else {
+      mostrarMsg('Erro: ' + ((d && d.erro) || 'não foi possível ativar'), 'error');
+    }
+  } catch (e) {
+    mostrarMsg('Erro: ' + e.message, 'error');
+  }
 }
 
 // Carregar rodadas para select ao abrir

@@ -20,7 +20,7 @@ var OITO_CAMBISTAS_ABA  = 'Cambistas'; // aba dos PINs (a mesma do Trincou)
 var OITO_CAMBISTA_COL_NOME = 1;        // coluna do NOME (A=1)
 var OITO_CAMBISTA_COL_PIN  = 2;        // coluna do PIN (B=2)
 
-var OITO_RODADAS_COLS = ['Rodada', 'Valor', 'TotalCotas', 'Status', 'DataCriacao'];
+var OITO_RODADAS_COLS = ['Rodada', 'Valor', 'TotalCotas', 'Status', 'DataCriacao', 'DataAtivacao'];
 var OITO_COLS         = ['Rodada', 'Cota', 'ID', 'Nome', 'Telefone', 'Numeros', 'Status', 'Cambista', 'DataPag', 'DataCriacao', 'Cidade'];
 var OITO_RES_COLS     = ['Data', 'Numeros', 'PublicadoEm'];
 
@@ -51,6 +51,7 @@ function handleOitoPost_(e) {
   if (acao === 'oito_nova_rodada')    return oitoAdminOk_(e.parameter) ? oitoJson_(oitoNovaRodada_(e.parameter)) : oitoJson_({ erro: 'Senha do admin inválida.' });
   if (acao === 'oito_deletar_rodada') return oitoAdminOk_(e.parameter) ? oitoText_(oitoDeletarRodada_(e.parameter)) : oitoText_('ERRO: senha do admin invalida');
   if (acao === 'oito_resultado')      return oitoAdminOk_(e.parameter) ? oitoJson_(oitoResultado_(e.parameter)) : oitoJson_({ erro: 'Senha do admin inválida.' });
+  if (acao === 'oito_ativar_rodada')  return oitoAdminOk_(e.parameter) ? oitoJson_(oitoAtivarRodada_(e.parameter)) : oitoJson_({ erro: 'Senha do admin inválida.' });
   if (acao === 'oito_set_premiacao')  return oitoAdminOk_(e.parameter) ? oitoJson_(oitoSetPremiacao_(e.parameter)) : oitoJson_({ erro: 'Senha do admin inválida.' });
   return null;
 }
@@ -63,6 +64,25 @@ function oitoAdminOk_(p) {
 function oitoSetPremiacao_(p) {
   PropertiesService.getScriptProperties().setProperty('OITO_PREMIACAO_PAGA', String(p.valor || '0'));
   return { ok: true };
+}
+
+// Ativa um bolão: a partir da data definida, os resultados passam a contar pontos só dele.
+function oitoAtivarRodada_(p) {
+  var rodada = Number(p.rodada);
+  if (!rodada) return { erro: 'Rodada inválida.' };
+  var data = String(p.data || '').trim();
+  if (data.indexOf('/') >= 0) { var pp = data.split('/'); if (pp.length === 3) data = pp[2] + '-' + ('0' + pp[1]).slice(-2) + '-' + ('0' + pp[0]).slice(-2); }
+  if (data.indexOf('T') >= 0) data = data.split('T')[0]; // datetime-local -> yyyy-MM-dd
+  if (!data) data = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var sh = oitoRodadasSheet_();
+  var rows = sh.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (Number(rows[i][0]) === rodada) {
+      sh.getRange(i + 1, 6).setValue(data); // DataAtivacao
+      return { ok: true, rodada: rodada, dataAtivacao: data };
+    }
+  }
+  return { erro: 'Rodada não encontrada.' };
 }
 
 /*──────────────── PLANILHAS ─────────────────────────────────────────────*/
@@ -117,6 +137,8 @@ function oitoRodadasAtivas_() {
     var pr = oitoPremios_(valor, totalCotas);
     var dc = rows[i][4];
     var dataInicio = dc instanceof Date ? Utilities.formatDate(dc, 'America/Sao_Paulo', 'dd/MM/yyyy') : String(dc || '');
+    var da = rows[i][5];
+    var dataAtivacao = da instanceof Date ? Utilities.formatDate(da, 'America/Sao_Paulo', 'yyyy-MM-dd') : String(da || '').trim();
     out.push({
       rodada: rodada,
       valor: valor,
@@ -125,6 +147,8 @@ function oitoRodadasAtivas_() {
       premioPrincipal: pr.principal,
       premioConsolacao: pr.consolacao,
       dataInicio: dataInicio,
+      dataAtivacao: dataAtivacao,
+      ativado: !!dataAtivacao,
     });
   }
   out.sort(function (a, b) { return a.rodada - b.rodada; });
@@ -143,7 +167,7 @@ function oitoNovaRodada_(p) {
   for (var i = 1; i < rows.length; i++) { if (Number(rows[i][0]) > maxR) maxR = Number(rows[i][0]); }
   var rodada = maxR + 1;
   var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
-  sh.appendRow([rodada, valor, total, 'ativa', agora]);
+  sh.appendRow([rodada, valor, total, 'ativa', agora, '']);
   return { ok: true, rodada: rodada };
 }
 
