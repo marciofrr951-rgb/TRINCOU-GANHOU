@@ -2,7 +2,7 @@
 var OITO_RODADAS_ABA='OitoRodadas', OITO_ABA='OitoDaSorte', OITO_RESULTADOS_ABA='OitoResultados';
 var OITO_CAMBISTAS_ABA='Cambistas', OITO_CAMBISTA_COL_NOME=1, OITO_CAMBISTA_COL_PIN=2;
 var OITO_RODADAS_COLS=['Rodada','Valor','TotalCotas','Status','DataCriacao'];
-var OITO_COLS=['Rodada','Cota','ID','Nome','Telefone','Numeros','Status','Cambista','DataPag','DataCriacao'];
+var OITO_COLS=['Rodada','Cota','ID','Nome','Telefone','Numeros','Status','Cambista','DataPag','DataCriacao','Cidade'];
 var OITO_RES_COLS=['Data','Numeros','PublicadoEm'];
 var OITO_PCT_PRINCIPAL=0.60, OITO_PCT_CONSOLACAO=0.10;
 
@@ -13,6 +13,8 @@ function handleOitoGet_(e){
   if(a==='oito_status')return oitoJson_(oitoStatus_());
   if(a==='oito_resultado_listar')return oitoJson_(oitoResultadoListar_());
   if(a==='oito_listar')return oitoJson_(oitoListar_(e.parameter));
+  if(a==='oito_meus')return oitoJson_(oitoMeus_(e.parameter));
+  if(a==='oito_premiacao_paga')return oitoJson_({premiacao_paga:PropertiesService.getScriptProperties().getProperty('OITO_PREMIACAO_PAGA')||'0'});
   if(a==='oito_verificarpin')return oitoText_(oitoVerificarPin_(e.parameter.pin));
   if(a==='oito_statuscota')return oitoText_(oitoStatusCota_(e.parameter.id));
   return null;
@@ -23,6 +25,7 @@ function handleOitoPost_(e){
   if(a==='oito_nova_rodada')return oitoJson_(oitoNovaRodada_(e.parameter));
   if(a==='oito_deletar_rodada')return oitoText_(oitoDeletarRodada_(e.parameter));
   if(a==='oito_resultado')return oitoJson_(oitoResultado_(e.parameter));
+  if(a==='oito_set_premiacao'){PropertiesService.getScriptProperties().setProperty('OITO_PREMIACAO_PAGA',String(e.parameter.valor||'0'));return oitoJson_({ok:true});}
   if(a==='oito_baixa')return oitoJson_(oitoBaixa_(e.parameter));
   return null;
 }
@@ -38,7 +41,8 @@ function oitoRodadasAtivas_(){
   for(var i=1;i<rows.length;i++){
     if(String(rows[i][3]||'').toLowerCase()==='deletada')continue;
     var rod=Number(rows[i][0]),val=Number(rows[i][1])||0,tot=Number(rows[i][2])||0,pr=oitoPremios_(val,tot);
-    out.push({rodada:rod,valor:val,totalCotas:tot,cotasVendidas:oitoCotasPagas_(rod),premioPrincipal:pr.principal,premioConsolacao:pr.consolacao});
+    var dc=rows[i][4],di=dc instanceof Date?Utilities.formatDate(dc,'America/Sao_Paulo','dd/MM/yyyy'):String(dc||'');
+    out.push({rodada:rod,valor:val,totalCotas:tot,cotasVendidas:oitoCotasPagas_(rod),premioPrincipal:pr.principal,premioConsolacao:pr.consolacao,dataInicio:di});
   }
   out.sort(function(a,b){return a.rodada-b.rodada;});return out;
 }
@@ -71,7 +75,17 @@ function oitoListar_(p){
   oitoRodadasAtivas_().forEach(function(r){ativas[r.rodada]=true;});
   var rows=oitoCotasSheet_().getDataRange().getValues(),out=[];
   for(var i=1;i<rows.length;i++){var rod=Number(rows[i][0]);if(fr&&rod!==fr)continue;if(!fr&&!ativas[rod])continue;
-    out.push({rodada:rod,cota:rows[i][1],nome:String(rows[i][3]||''),numeros:String(rows[i][5]||''),status:String(rows[i][6]||'')});}
+    out.push({rodada:rod,cota:rows[i][1],nome:String(rows[i][3]||''),numeros:String(rows[i][5]||''),status:String(rows[i][6]||''),cidade:String(rows[i][10]||'')});}
+  return out;
+}
+function oitoMeus_(p){
+  var tel=String(p.telefone||'').replace(/\D/g,'');if(tel.length<8)return[];
+  var rows=oitoCotasSheet_().getDataRange().getValues(),out=[];
+  for(var i=1;i<rows.length;i++){
+    var rt=String(rows[i][4]||'').replace(/\D/g,'');if(!rt)continue;
+    var bate=rt===tel||(rt.length>=9&&tel.length>=9&&rt.slice(-9)===tel.slice(-9));if(!bate)continue;
+    out.push({rodada:Number(rows[i][0]),cota:rows[i][1],id:String(rows[i][2]||''),nome:String(rows[i][3]||''),numeros:String(rows[i][5]||''),status:String(rows[i][6]||''),cambista:String(rows[i][7]||''),cidade:String(rows[i][10]||'')});
+  }
   return out;
 }
 function oitoStatusCota_(id){
@@ -81,7 +95,7 @@ function oitoStatusCota_(id){
   return'PENDENTE';
 }
 function oitoCriar_(p){
-  var rod=Number(p.rodada),nome=String(p.nome||'').trim(),tel=String(p.telefone||'').replace(/\D/g,''),num=String(p.numeros||'').trim(),met=String(p.metodo||'pix').toLowerCase(),pin=String(p.pin||'').trim();
+  var rod=Number(p.rodada),nome=String(p.nome||'').trim(),tel=String(p.telefone||'').replace(/\D/g,''),cidade=String(p.cidade||'').trim(),num=String(p.numeros||'').trim(),met=String(p.metodo||'pix').toLowerCase(),pin=String(p.pin||'').trim();
   if(!rod)return{erro:'Rodada não selecionada.'};if(!nome)return{erro:'Informe seu nome.'};if(tel.length<10)return{erro:'WhatsApp inválido.'};
   var nums=num.split(/[-,\s]+/).map(function(n){return parseInt(n,10);}).filter(function(n){return!isNaN(n);}),dist={};
   for(var k=0;k<nums.length;k++){if(nums[k]<1||nums[k]>80)return{erro:'Números devem ser de 01 a 80.'};dist[nums[k]]=true;}
@@ -94,7 +108,7 @@ function oitoCriar_(p){
   if(met==='dinheiro'){var nc=oitoVerificarPin_(pin);if(!nc)return{erro:'PIN do cambista inválido.'};status='PAGO DINHEIRO';camb=nc;dp=ag;}
   else{status='PENDENTE';camb='ONLINE';dp='';}
   var nf=nums.sort(function(a,b){return a-b;}).map(function(n){return('0'+n).slice(-2);}).join('-');
-  oitoCotasSheet_().appendRow([rod,cota,id,nome,tel,nf,status,camb,dp,ag]);
+  oitoCotasSheet_().appendRow([rod,cota,id,nome,tel,nf,status,camb,dp,ag,cidade]);
   return{cota:cota,id:id,status:status};
 }
 function oitoBaixa_(p){
@@ -105,7 +119,7 @@ function oitoBaixa_(p){
 }
 function oitoStatus_(){
   var at=oitoRodadasAtivas_();
-  if(at.length>0){var r=at[0];return{totalCotas:r.totalCotas,valorCota:r.valor,premioPrincipal:r.premioPrincipal,premioConsolacao:r.premioConsolacao,percOrganizador:30,dataInicio:'',rodada:r.rodada,cotasVendidas:r.cotasVendidas};}
+  if(at.length>0){var r=at[0];return{totalCotas:r.totalCotas,valorCota:r.valor,premioPrincipal:r.premioPrincipal,premioConsolacao:r.premioConsolacao,percOrganizador:30,dataInicio:r.dataInicio||'',rodada:r.rodada,cotasVendidas:r.cotasVendidas};}
   return{totalCotas:100,valorCota:20,premioPrincipal:1200,premioConsolacao:200,percOrganizador:30,dataInicio:'',rodada:1,cotasVendidas:0};
 }
 function oitoVerificarPin_(pin){
