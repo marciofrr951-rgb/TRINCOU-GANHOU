@@ -212,29 +212,13 @@ table.board td { padding:8px; border-top:1px solid rgba(255,255,255,0.05); font-
     </div>
   </div>
 
-  <!-- INFO CARDS -->
-  <div class="info-cards">
-    <div class="info-card">
-      <div class="ico">👥</div>
-      <div class="lbl">Cotas · valor da cota</div>
-      <div class="val roxo"><span id="icTotalCotas">100</span> · <span id="icValor">R$ 20,00</span></div>
-    </div>
-    <div class="info-card">
-      <div class="ico">🏆</div>
-      <div class="lbl">Acertar os 08 primeiro</div>
-      <div class="val gold" id="icPremio">R$ 1.200,00</div>
-    </div>
-    <div class="info-card">
-      <div class="ico">⭐</div>
-      <div class="lbl">Menos pontos ao final</div>
-      <div class="val verde" id="icConsolacao">R$ 200,00</div>
-    </div>
-    <div class="info-card">
-      <div class="ico">📋</div>
-      <div class="lbl">Cada jogador escolhe</div>
-      <div class="val">8 nº de 01 a 80</div>
-    </div>
+  <!-- INFO BAR -->
+  <div class="info-cards" style="grid-template-columns:repeat(3,1fr);">
+    <div class="info-card"><div class="ico">🎯</div><div class="lbl">Escolha</div><div class="val roxo">8 NÚMEROS</div></div>
+    <div class="info-card"><div class="ico">🔢</div><div class="lbl">Números</div><div class="val">01 A 80</div></div>
+    <div class="info-card"><div class="ico">🍀</div><div class="lbl">Sorteio</div><div class="val verde">LOTERIA QUINA</div></div>
   </div>
+  <span id="icTotalCotas" style="display:none"></span><span id="icValor" style="display:none"></span><span id="icPremio" style="display:none"></span><span id="icConsolacao" style="display:none"></span>
 
   <div class="note-bar">💲 Se houver mais de um ganhador, o prêmio é <b>dividido por igual</b>.</div>
 
@@ -257,7 +241,26 @@ table.board td { padding:8px; border-top:1px solid rgba(255,255,255,0.05); font-
     </div>
   </div>
 
-  <!-- BOARD -->
+  <!-- COMO FUNCIONA -->
+  <div class="board-head"><h2>⚙️ Como Funciona</h2></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:26px;">
+    <div class="info-card" style="text-align:center;"><div style="font-size:26px;">1️⃣</div><div style="font-size:12px;margin-top:6px;line-height:1.4;">Escolha um <b>bolão disponível</b></div></div>
+    <div class="info-card" style="text-align:center;"><div style="font-size:26px;">2️⃣</div><div style="font-size:12px;margin-top:6px;line-height:1.4;">Selecione <b>8 números</b> de 01 a 80</div></div>
+    <div class="info-card" style="text-align:center;"><div style="font-size:26px;">3️⃣</div><div style="font-size:12px;margin-top:6px;line-height:1.4;">Aguarde o <b>sorteio da Quina</b></div></div>
+    <div class="info-card" style="text-align:center;"><div style="font-size:26px;">4️⃣</div><div style="font-size:12px;margin-top:6px;line-height:1.4;">Acerte mais números e <b>ganhe prêmios</b></div></div>
+  </div>
+
+  <!-- SEGURANÇA -->
+  <div class="board-head"><h2>🛡️ Segurança e Confiança</h2></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:26px;">
+    <div class="info-card" style="font-size:13px;">✅ Sorteios da <b>Loteria Quina (CEF)</b></div>
+    <div class="info-card" style="font-size:13px;">✅ Resultados <b>100% transparentes</b></div>
+    <div class="info-card" style="font-size:13px;">✅ Seus <b>dados protegidos</b></div>
+    <div class="info-card" style="font-size:13px;">✅ <b>Suporte humanizado</b></div>
+  </div>
+
+  <!-- QUADRO GERAL (oculto na home; a planilha completa fica em "Acompanhar") -->
+  <div style="display:none">
   <div class="board-head">
     <h2>🏁 Quadro de jogadores</h2>
     <span style="font-size:12px;color:var(--txt-dim);" id="boardInfo"></span>
@@ -302,6 +305,7 @@ table.board td { padding:8px; border-top:1px solid rgba(255,255,255,0.05); font-
     <span>⭐ Menor pontuação ao final = <b>prêmio consolação</b></span>
     <span><span class="num-cell hit" style="width:20px;height:20px;line-height:20px;"></span> número já sorteado</span>
   </div>
+  </div><!-- /quadro geral oculto -->
 </div>
 
 <!-- MODAL JOGAR -->
@@ -859,6 +863,29 @@ async function consultarBoloes() {
   }
 }
 
+// Abre o fluxo de jogo já com o bolão escolhido (botão "Participar agora" dos cards)
+function abrirJogarBolao(rod) {
+  _selecionados = [];
+  _metodo = 'pix';
+  _rodadaSelecionada = rod;
+  var info = (_rodasDisponiveis || []).filter(function(b){ return Number(b.rodada) === Number(rod); })[0] || {};
+  if (info.valor) CONFIG.valorCota = info.valor;
+  if (info.totalCotas) CONFIG.totalCotas = info.totalCotas;
+  if (info.premioPrincipal) CONFIG.premioPrincipal = info.premioPrincipal;
+  if (info.premioConsolacao) CONFIG.premioConsolacao = info.premioConsolacao;
+  document.getElementById('inpNome').value = '';
+  document.getElementById('inpTel').value = '';
+  if (document.getElementById('inpCidade')) document.getElementById('inpCidade').value = '';
+  document.getElementById('inpPin').value = '';
+  document.getElementById('modalErr').style.display = 'none';
+  document.getElementById('pickCount').textContent = '0';
+  document.getElementById('btnStep1').disabled = true;
+  montarGrid();
+  selPagamento('pix');
+  mostrarStep(1);
+  document.getElementById('modalJogar').classList.add('open');
+}
+
 // ════════ ACOMPANHAR BOLÃO ════════
 var _acompRes = [], _acompResIdx = 0, _acompInfo = {}, _acompMinhas = [];
 
@@ -1267,29 +1294,43 @@ function validarTelefoneQuadro() {
 function carregarRodasDisponiveis() {
   fetch('/script?acao=oito_rodadas_disponivel')
     .then(r => r.json())
-    .then(bolões => {
-      var html = '';
-      if (!bolões || bolões.length === 0) {
-        html = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--txt-dim);">Nenhuma rodada disponível</div>';
-      } else {
-        bolões.forEach(function(rod) {
-          var vendidas = rod.cotasVendidas || 0;
-          var percentual = rod.totalCotas ? Math.round((vendidas / rod.totalCotas) * 100) : 0;
-          
-          html += '<div style="background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:16px;">';
-          html += '<div style="font-size:12px;color:var(--txt-dim);margin-bottom:8px;">Rodada <strong>#' + String(rod.rodada).padStart(3,'0') + '</strong></div>';
-          html += '<div style="font-size:18px;font-weight:700;color:var(--roxo);margin-bottom:12px;">R$ ' + (rod.valor || 0).toFixed(2).replace('.',',') + '</div>';
-          html += '<div style="font-size:12px;margin-bottom:8px;"><span style="color:var(--txt-dim);">Cotas:</span> <strong>' + vendidas + '/' + rod.totalCotas + '</strong></div>';
-          html += '<div style="background:rgba(255,255,255,0.05);height:6px;border-radius:3px;margin-bottom:8px;overflow:hidden;"><div style="height:100%;background:var(--roxo);width:' + percentual + '%;"></div></div>';
-          html += '<div style="font-size:11px;color:var(--txt-dim);margin-bottom:8px;">Prêmios:</div>';
-          html += '<div style="font-size:11px;margin-bottom:4px;"><span style="color:var(--verde);">1º lugar:</span> R$ ' + (rod.premioPrincipal || 0).toFixed(2).replace('.',',') + '</div>';
-          html += '<div style="font-size:11px;"><span style="color:#ff6b6b;">Último:</span> R$ ' + (rod.premioConsolacao || 0).toFixed(2).replace('.',',') + '</div>';
-          html += '</div>';
-        });
+    .then(function(boloes){
+      var cont = document.getElementById('rodasContainer');
+      cont.style.gridTemplateColumns = '1fr'; // cards full width, empilhados
+      if (!boloes || boloes.length === 0) {
+        cont.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt-dim);">Nenhum bolão disponível no momento.</div>';
+        return;
       }
-      document.getElementById('rodasContainer').innerHTML = html;
+      var html = '';
+      boloes.forEach(function(rod){
+        var vendidas = rod.cotasVendidas || 0;
+        var total = rod.totalCotas || 0;
+        var pct = total ? Math.round((vendidas / total) * 100) : 0;
+        var st = vendidas === 0 ? 'EM FORMAÇÃO' : (vendidas >= total ? 'ESGOTADO' : 'EM ANDAMENTO');
+        html += '<div style="background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;">'
+          + '<div style="width:88px;height:88px;border-radius:50%;border:3px solid var(--roxo);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px rgba(124,58,237,0.4);">'
+          + '<span style="font-size:9px;color:var(--txt-dim);">BOLÃO</span><span style="font-family:Bebas Neue,sans-serif;font-size:26px;color:#fff;line-height:1;">#' + String(rod.rodada).padStart(2,'0') + '</span>'
+          + '<span style="font-size:7px;color:var(--roxo-claro);font-weight:800;letter-spacing:0.5px;">' + st + '</span></div>'
+          + '<div style="flex:1;min-width:190px;">'
+          + '<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:8px;">'
+          + '<div><div style="font-size:20px;font-weight:900;">' + vendidas + '</div><div style="font-size:10px;color:var(--txt-dim);">COTAS VENDIDAS</div></div>'
+          + '<div><div style="font-size:20px;font-weight:900;">' + total + '</div><div style="font-size:10px;color:var(--txt-dim);">COTAS TOTAIS</div></div>'
+          + '<div><div style="font-size:20px;font-weight:900;">' + pct + '%</div><div style="font-size:10px;color:var(--txt-dim);">PREENCHIDO</div></div>'
+          + '</div>'
+          + '<div style="background:rgba(255,255,255,0.06);height:8px;border-radius:20px;overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,var(--roxo),var(--roxo-claro));width:' + pct + '%;"></div></div>'
+          + '<div style="font-size:11px;color:var(--txt-dim);margin-top:5px;">' + vendidas + ' de ' + total + ' cotas vendidas</div>'
+          + '</div>'
+          + '<div style="text-align:center;min-width:160px;flex:1;">'
+          + '<div style="font-size:11px;color:var(--txt-dim);">🏆 PRÊMIO PRINCIPAL</div>'
+          + '<div style="font-family:Bebas Neue,sans-serif;font-size:26px;color:var(--gold);margin-bottom:8px;">' + moeda(rod.premioPrincipal || 0) + '</div>'
+          + '<button onclick="abrirJogarBolao(' + rod.rodada + ')" style="width:100%;background:linear-gradient(135deg,var(--roxo),var(--roxo-deep));color:#fff;border:none;border-radius:10px;padding:12px;font-weight:900;cursor:pointer;font-size:13px;">PARTICIPAR AGORA →</button>'
+          + '<div style="margin-top:6px;font-size:13px;color:var(--verde);font-weight:700;">Cota ' + moeda(rod.valor || 0) + '</div>'
+          + '</div>'
+          + '</div>';
+      });
+      cont.innerHTML = html;
     })
-    .catch(e => console.error('Erro ao carregar bolões:', e));
+    .catch(function(e){ console.error('Erro ao carregar bolões:', e); });
 }
 
 carregarQuadro();
