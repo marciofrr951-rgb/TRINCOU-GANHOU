@@ -229,6 +229,14 @@ input:focus, select:focus {
 
   <div id="msg" style="display:none;"></div>
 
+  <!-- SENHA ADMIN -->
+  <div class="panel" style="margin-bottom:16px;border-color:rgba(255,193,7,0.4);">
+    <div class="form-group" style="margin-bottom:0;">
+      <label>🔒 Senha do admin <span style="color:rgba(255,255,255,0.4);font-weight:400;">(necessária para salvar)</span></label>
+      <input type="password" id="admSenha" placeholder="Digite a senha do admin">
+    </div>
+  </div>
+
   <div class="grid-2">
     <!-- PAINEL LANÇAR RESULTADO -->
     <div class="panel">
@@ -310,7 +318,8 @@ async function deletarRodadaConfirm(rodada) {
       method: 'POST',
       body: new URLSearchParams({
         acao: 'oito_deletar_rodada',
-        rodada: rodada
+        rodada: rodada,
+        senha: getSenha()
       })
     });
     var txt = await resp.text();
@@ -339,7 +348,8 @@ async function lancarResultado() {
       method: 'POST',
       body: new URLSearchParams({
         acao: 'oito_resultado',
-        numeros: numeros
+        numeros: numeros,
+        senha: getSenha()
       })
     });
     var data = await resp.json();
@@ -381,7 +391,8 @@ async function criarRodada() {
       valor: String(valor),
       total: String(total),
       premioPrincipal: String(premioPrincipal),
-      premioConsolacao: String(premioConsolacao)
+      premioConsolacao: String(premioConsolacao),
+      senha: getSenha()
     });
     
     var resp = await fetch('/script', {
@@ -462,6 +473,11 @@ async function carregarRodadas() {
   }
 }
 
+function getSenha() {
+  var el = document.getElementById('admSenha');
+  return el ? el.value.trim() : '';
+}
+
 function mostrarMsg(txt, tipo) {
   var msg = document.getElementById('msg');
   msg.textContent = txt;
@@ -479,26 +495,21 @@ async function atualizarPremiacao() {
       return;
     }
     
-    // Salva no Apps Script
-    var resp = await fetch('https://script.google.com/macros/s/AKfycbwCq7jjWzDT3oJOKKSrJ6s-ykk6ZJi6P2elIwPxR4FHUao2RjIVH1T669iJ1YUb4Fej/exec', {
+    var senha = getSenha();
+    if (!senha) { alert('Digite a senha do admin no topo da página.'); return; }
+    // Salva no Apps Script (via proxy /script, ação correta e protegida por senha)
+    var resp = await fetch('/script', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: 'acao=oito_premiacao_paga&valor=' + valor
+      body: new URLSearchParams({ acao: 'oito_set_premiacao', valor: String(valor), senha: senha })
     });
-    
-    var data = await resp.text();
-    console.log('Resposta Apps Script:', data);
-    
-    // Atualiza display
-    document.getElementById('totalPago').textContent = 'R$ ' + valor.toFixed(2).replace('.', ',');
-    
-    alert('✓ Premiação atualizada com sucesso!\n\nValor: R$ ' + valor.toFixed(2));
-    
-    // Redireciona para o site após 1 segundo
-    setTimeout(() => {
-      window.location.href = '/oito-da-sorte';
-    }, 1000);
-    
+    var data = await resp.json();
+    if (data && data.ok) {
+      var tp = document.getElementById('totalPago'); if (tp) tp.textContent = 'R$ ' + valor.toFixed(2).replace('.', ',');
+      alert('✓ Premiação atualizada com sucesso!\n\nValor: R$ ' + valor.toFixed(2));
+    } else {
+      alert('❌ ' + ((data && data.erro) || 'Erro ao atualizar (verifique a senha do admin).'));
+    }
   } catch(err) {
     console.error('Erro ao atualizar premiação:', err);
     alert('❌ Erro: ' + err.message);
@@ -532,11 +543,13 @@ async function iniciarRodadaAdmin() {
   }
 })();
 
-// Carregar premiação salva
+// Carregar premiação real (do backend)
 (function() {
-  var paga = localStorage.getItem('premiacao_paga') || '0';
-  document.getElementById('premiacaoPaga').value = paga;
-  document.getElementById('totalPago').textContent = 'R$ ' + parseFloat(paga).toFixed(2).replace('.', ',');
+  fetch('/script?acao=oito_premiacao_paga').then(function(r){return r.json();}).then(function(d){
+    var paga = (d && d.premiacao_paga) ? d.premiacao_paga : '0';
+    var inp = document.getElementById('premiacaoPaga'); if (inp) inp.value = paga;
+    var tp = document.getElementById('totalPago'); if (tp) tp.textContent = 'R$ ' + parseFloat(paga).toFixed(2).replace('.', ',');
+  }).catch(function(){});
 })();
 
 // Carregar rodadas ao abrir

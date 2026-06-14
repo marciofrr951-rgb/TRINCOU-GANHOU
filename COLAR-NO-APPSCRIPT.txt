@@ -22,12 +22,15 @@ function handleOitoGet_(e){
 function handleOitoPost_(e){
   var a=(e&&e.parameter&&e.parameter.acao)||'';
   if(a==='oito_criar')return oitoJson_(oitoCriar_(e.parameter));
-  if(a==='oito_nova_rodada')return oitoJson_(oitoNovaRodada_(e.parameter));
-  if(a==='oito_deletar_rodada')return oitoText_(oitoDeletarRodada_(e.parameter));
-  if(a==='oito_resultado')return oitoJson_(oitoResultado_(e.parameter));
   if(a==='oito_baixa')return oitoJson_(oitoBaixa_(e.parameter));
+  if(a==='oito_nova_rodada')return oitoAdminOk_(e.parameter)?oitoJson_(oitoNovaRodada_(e.parameter)):oitoJson_({erro:'Senha do admin inválida.'});
+  if(a==='oito_deletar_rodada')return oitoAdminOk_(e.parameter)?oitoText_(oitoDeletarRodada_(e.parameter)):oitoText_('ERRO: senha do admin invalida');
+  if(a==='oito_resultado')return oitoAdminOk_(e.parameter)?oitoJson_(oitoResultado_(e.parameter)):oitoJson_({erro:'Senha do admin inválida.'});
+  if(a==='oito_set_premiacao')return oitoAdminOk_(e.parameter)?oitoJson_(oitoSetPremiacao_(e.parameter)):oitoJson_({erro:'Senha do admin inválida.'});
   return null;
 }
+function oitoAdminOk_(p){var s=PropertiesService.getScriptProperties().getProperty('OITO_ADMIN_SENHA')||'';if(!s)return true;return String(p.senha||'')===s;}
+function oitoSetPremiacao_(p){PropertiesService.getScriptProperties().setProperty('OITO_PREMIACAO_PAGA',String(p.valor||'0'));return{ok:true};}
 function oitoAba_(nome,cols){var ss=SpreadsheetApp.getActiveSpreadsheet();var sh=ss.getSheetByName(nome);if(!sh){sh=ss.insertSheet(nome);sh.getRange(1,1,1,cols.length).setValues([cols]).setFontWeight('bold');}return sh;}
 function oitoRodadasSheet_(){return oitoAba_(OITO_RODADAS_ABA,OITO_RODADAS_COLS);}
 function oitoCotasSheet_(){return oitoAba_(OITO_ABA,OITO_COLS);}
@@ -111,6 +114,8 @@ function oitoCriar_(p){
   return{cota:cota,id:id,status:status};
 }
 function oitoBaixa_(p){
+  var tk=PropertiesService.getScriptProperties().getProperty('OITO_WEBHOOK_TOKEN')||'';
+  if(tk&&String(p.token||'')!==tk)return{erro:'nao autorizado'};
   var id=String(p.id||'').trim();if(!id)return{erro:'id ausente'};
   var sh=oitoCotasSheet_(),rows=sh.getDataRange().getValues();
   for(var i=1;i<rows.length;i++){if(String(rows[i][2]).trim()===id){var l=i+1;sh.getRange(l,7).setValue('PAGO');if(!rows[i][8])sh.getRange(l,9).setValue(Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm'));if(p.telefone)sh.getRange(l,5).setValue(String(p.telefone));if(p.cambista)sh.getRange(l,8).setValue(String(p.cambista));return{ok:true};}}

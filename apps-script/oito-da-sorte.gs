@@ -46,14 +46,24 @@ function handleOitoGet_(e) {
 function handleOitoPost_(e) {
   var acao = (e && e.parameter && e.parameter.acao) || '';
   if (acao === 'oito_criar')          return oitoJson_(oitoCriar_(e.parameter));
-  if (acao === 'oito_nova_rodada')    return oitoJson_(oitoNovaRodada_(e.parameter));
-  if (acao === 'oito_deletar_rodada') return oitoText_(oitoDeletarRodada_(e.parameter));
-  if (acao === 'oito_resultado')      return oitoJson_(oitoResultado_(e.parameter));
-  if (acao === 'oito_baixa')          return oitoJson_(oitoBaixa_(e.parameter)); // webhook PIX
+  if (acao === 'oito_baixa')          return oitoJson_(oitoBaixa_(e.parameter)); // webhook PIX (protegido por token)
+  // Ações de admin — exigem a senha do admin (OITO_ADMIN_SENHA nas Propriedades do Script)
+  if (acao === 'oito_nova_rodada')    return oitoAdminOk_(e.parameter) ? oitoJson_(oitoNovaRodada_(e.parameter)) : oitoJson_({ erro: 'Senha do admin inválida.' });
+  if (acao === 'oito_deletar_rodada') return oitoAdminOk_(e.parameter) ? oitoText_(oitoDeletarRodada_(e.parameter)) : oitoText_('ERRO: senha do admin invalida');
+  if (acao === 'oito_resultado')      return oitoAdminOk_(e.parameter) ? oitoJson_(oitoResultado_(e.parameter)) : oitoJson_({ erro: 'Senha do admin inválida.' });
+  if (acao === 'oito_set_premiacao')  return oitoAdminOk_(e.parameter) ? oitoJson_(oitoSetPremiacao_(e.parameter)) : oitoJson_({ erro: 'Senha do admin inválida.' });
   return null;
 }
-// OBS: o valor de "Premiações Pagas" (OITO_PREMIACAO_PAGA) NÃO é alterável pela web.
-// Para mudar: Apps Script > ⚙️ Configurações do projeto > Propriedades do script.
+
+function oitoAdminOk_(p) {
+  var s = PropertiesService.getScriptProperties().getProperty('OITO_ADMIN_SENHA') || '';
+  if (!s) return true; // sem senha configurada → não bloqueia (defina OITO_ADMIN_SENHA p/ ativar)
+  return String(p.senha || '') === s;
+}
+function oitoSetPremiacao_(p) {
+  PropertiesService.getScriptProperties().setProperty('OITO_PREMIACAO_PAGA', String(p.valor || '0'));
+  return { ok: true };
+}
 
 /*──────────────── PLANILHAS ─────────────────────────────────────────────*/
 function oitoAba_(nome, cols) {
@@ -295,6 +305,10 @@ function oitoCriar_(p) {
 
 // Baixa do PIX (chamada pelo webhook do Mercado Pago)
 function oitoBaixa_(p) {
+  // Só aceita a baixa com a chave secreta (configure OITO_WEBHOOK_TOKEN nas Propriedades do Script).
+  // Se a propriedade não estiver definida, não bloqueia (compatibilidade).
+  var tk = PropertiesService.getScriptProperties().getProperty('OITO_WEBHOOK_TOKEN') || '';
+  if (tk && String(p.token || '') !== tk) return { erro: 'nao autorizado' };
   var id = String(p.id || '').trim();
   if (!id) return { erro: 'id ausente' };
   var sh = oitoCotasSheet_();

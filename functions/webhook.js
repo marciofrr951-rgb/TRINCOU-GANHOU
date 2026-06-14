@@ -35,9 +35,10 @@ export async function onRequestPost(context) {
     const ids = idsStr.split(',').map(id => id.trim()).filter(Boolean);
 
     const scriptUrl = env.APPS_SCRIPT_URL;
+    const oitoToken = env.OITO_WEBHOOK_TOKEN || ''; // chave secreta compartilhada com o Apps Script
     for (const id of ids) {
       const body = jogo === 'oito'
-        ? `acao=oito_baixa&id=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}&cambista=${encodeURIComponent(cambista)}`
+        ? `acao=oito_baixa&id=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}&cambista=${encodeURIComponent(cambista)}&token=${encodeURIComponent(oitoToken)}`
         : `bilhete=${encodeURIComponent(id)}&status=PAGO&telefone=${encodeURIComponent(telefone)}&cambista=${encodeURIComponent(cambista)}`;
       await fetch(scriptUrl, {
         method: 'POST',
