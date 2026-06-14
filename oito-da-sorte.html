@@ -641,9 +641,12 @@ function montarGrid() {
   var grid = document.getElementById('numGrid');
   var html = '';
   for (var i=1;i<=80;i++){
-    html += '<button type="button" class="num-pick" data-n="' + i + '" onclick="togglePick(' + i + ')">' + String(i).padStart(2,'0') + '</button>';
+    var sel = _selecionados.indexOf(i) >= 0 ? ' sel' : '';
+    html += '<button type="button" class="num-pick' + sel + '" data-n="' + i + '" onclick="togglePick(' + i + ')">' + String(i).padStart(2,'0') + '</button>';
   }
   grid.innerHTML = html;
+  var pc = document.getElementById('pickCount'); if (pc) pc.textContent = _selecionados.length;
+  var b1 = document.getElementById('btnStep1'); if (b1) b1.disabled = _selecionados.length !== 8;
 }
 
 function togglePick(n) {
