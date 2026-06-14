@@ -21,7 +21,7 @@ var OITO_CAMBISTA_COL_NOME = 1;        // coluna do NOME (A=1)
 var OITO_CAMBISTA_COL_PIN  = 2;        // coluna do PIN (B=2)
 
 var OITO_RODADAS_COLS = ['Rodada', 'Valor', 'TotalCotas', 'Status', 'DataCriacao'];
-var OITO_COLS         = ['Rodada', 'Cota', 'ID', 'Nome', 'Telefone', 'Numeros', 'Status', 'Cambista', 'DataPag', 'DataCriacao'];
+var OITO_COLS         = ['Rodada', 'Cota', 'ID', 'Nome', 'Telefone', 'Numeros', 'Status', 'Cambista', 'DataPag', 'DataCriacao', 'Cidade'];
 var OITO_RES_COLS     = ['Data', 'Numeros', 'PublicadoEm'];
 
 // % da premiação (60% pro 1º lugar, 10% pra menor pontuação)
@@ -36,6 +36,8 @@ function handleOitoGet_(e) {
   if (acao === 'oito_status')             return oitoJson_(oitoStatus_());
   if (acao === 'oito_resultado_listar')   return oitoJson_(oitoResultadoListar_());
   if (acao === 'oito_listar')             return oitoJson_(oitoListar_(e.parameter));
+  if (acao === 'oito_meus')               return oitoJson_(oitoMeus_(e.parameter));
+  if (acao === 'oito_premiacao_paga')     return oitoJson_({ premiacao_paga: PropertiesService.getScriptProperties().getProperty('OITO_PREMIACAO_PAGA') || '0' });
   if (acao === 'oito_verificarpin')       return oitoText_(oitoVerificarPin_(e.parameter.pin));
   if (acao === 'oito_statuscota')         return oitoText_(oitoStatusCota_(e.parameter.id));
   return null;
@@ -47,6 +49,7 @@ function handleOitoPost_(e) {
   if (acao === 'oito_nova_rodada')    return oitoJson_(oitoNovaRodada_(e.parameter));
   if (acao === 'oito_deletar_rodada') return oitoText_(oitoDeletarRodada_(e.parameter));
   if (acao === 'oito_resultado')      return oitoJson_(oitoResultado_(e.parameter));
+  if (acao === 'oito_set_premiacao')  { PropertiesService.getScriptProperties().setProperty('OITO_PREMIACAO_PAGA', String(e.parameter.valor || '0')); return oitoJson_({ ok: true }); }
   if (acao === 'oito_baixa')          return oitoJson_(oitoBaixa_(e.parameter)); // webhook PIX
   return null;
 }
@@ -101,6 +104,8 @@ function oitoRodadasAtivas_() {
     var valor = Number(rows[i][1]) || 0;
     var totalCotas = Number(rows[i][2]) || 0;
     var pr = oitoPremios_(valor, totalCotas);
+    var dc = rows[i][4];
+    var dataInicio = dc instanceof Date ? Utilities.formatDate(dc, 'America/Sao_Paulo', 'dd/MM/yyyy') : String(dc || '');
     out.push({
       rodada: rodada,
       valor: valor,
@@ -108,6 +113,7 @@ function oitoRodadasAtivas_() {
       cotasVendidas: oitoCotasPagas_(rodada),
       premioPrincipal: pr.principal,
       premioConsolacao: pr.consolacao,
+      dataInicio: dataInicio,
     });
   }
   out.sort(function (a, b) { return a.rodada - b.rodada; });
@@ -187,6 +193,32 @@ function oitoListar_(p) {
       nome: String(rows[i][3] || ''),
       numeros: String(rows[i][5] || ''),
       status: String(rows[i][6] || ''),
+      cidade: String(rows[i][10] || ''),
+    });
+  }
+  return out;
+}
+
+// Cotas de um participante (por WhatsApp), em todas as rodadas. Para "Meus Bolões".
+function oitoMeus_(p) {
+  var tel = String(p.telefone || '').replace(/\D/g, '');
+  if (tel.length < 8) return [];
+  var rows = oitoCotasSheet_().getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < rows.length; i++) {
+    var rowTel = String(rows[i][4] || '').replace(/\D/g, '');
+    if (!rowTel) continue;
+    var bate = rowTel === tel || (rowTel.length >= 9 && tel.length >= 9 && rowTel.slice(-9) === tel.slice(-9));
+    if (!bate) continue;
+    out.push({
+      rodada: Number(rows[i][0]),
+      cota: rows[i][1],
+      id: String(rows[i][2] || ''),
+      nome: String(rows[i][3] || ''),
+      numeros: String(rows[i][5] || ''),
+      status: String(rows[i][6] || ''),
+      cambista: String(rows[i][7] || ''),
+      cidade: String(rows[i][10] || ''),
     });
   }
   return out;
@@ -208,6 +240,7 @@ function oitoCriar_(p) {
   var rodada = Number(p.rodada);
   var nome = String(p.nome || '').trim();
   var telefone = String(p.telefone || '').replace(/\D/g, '');
+  var cidade = String(p.cidade || '').trim();
   var numeros = String(p.numeros || '').trim();
   var metodo = String(p.metodo || 'pix').toLowerCase();
   var pin = String(p.pin || '').trim();
@@ -255,7 +288,7 @@ function oitoCriar_(p) {
   }
 
   var numerosFmt = nums.sort(function (a, b) { return a - b; }).map(function (n) { return ('0' + n).slice(-2); }).join('-');
-  oitoCotasSheet_().appendRow([rodada, cota, id, nome, telefone, numerosFmt, status, cambista, dataPag, agora]);
+  oitoCotasSheet_().appendRow([rodada, cota, id, nome, telefone, numerosFmt, status, cambista, dataPag, agora, cidade]);
   return { cota: cota, id: id, status: status };
 }
 
