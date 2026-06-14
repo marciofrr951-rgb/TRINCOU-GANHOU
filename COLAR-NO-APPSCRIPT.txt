@@ -25,7 +25,6 @@ function handleOitoPost_(e){
   if(a==='oito_nova_rodada')return oitoJson_(oitoNovaRodada_(e.parameter));
   if(a==='oito_deletar_rodada')return oitoText_(oitoDeletarRodada_(e.parameter));
   if(a==='oito_resultado')return oitoJson_(oitoResultado_(e.parameter));
-  if(a==='oito_set_premiacao'){PropertiesService.getScriptProperties().setProperty('OITO_PREMIACAO_PAGA',String(e.parameter.valor||'0'));return oitoJson_({ok:true});}
   if(a==='oito_baixa')return oitoJson_(oitoBaixa_(e.parameter));
   return null;
 }

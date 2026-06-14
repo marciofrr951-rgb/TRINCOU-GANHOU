@@ -49,10 +49,11 @@ function handleOitoPost_(e) {
   if (acao === 'oito_nova_rodada')    return oitoJson_(oitoNovaRodada_(e.parameter));
   if (acao === 'oito_deletar_rodada') return oitoText_(oitoDeletarRodada_(e.parameter));
   if (acao === 'oito_resultado')      return oitoJson_(oitoResultado_(e.parameter));
-  if (acao === 'oito_set_premiacao')  { PropertiesService.getScriptProperties().setProperty('OITO_PREMIACAO_PAGA', String(e.parameter.valor || '0')); return oitoJson_({ ok: true }); }
   if (acao === 'oito_baixa')          return oitoJson_(oitoBaixa_(e.parameter)); // webhook PIX
   return null;
 }
+// OBS: o valor de "Premiações Pagas" (OITO_PREMIACAO_PAGA) NÃO é alterável pela web.
+// Para mudar: Apps Script > ⚙️ Configurações do projeto > Propriedades do script.
 
 /*──────────────── PLANILHAS ─────────────────────────────────────────────*/
 function oitoAba_(nome, cols) {
